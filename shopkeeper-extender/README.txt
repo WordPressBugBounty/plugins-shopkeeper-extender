@@ -2,8 +2,8 @@
 Contributors: getbowtied
 Tags: shopkeeper, woocommerce, theme
 Requires at least: 6.0
-Tested up to: 6.6
-Stable tag: 3.8
+Tested up to: 6.7
+Stable tag: 4.0
 Requires PHP: 7.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -21,7 +21,7 @@ Companion plugin for the [Shopkeeper Theme](https://1.envato.market/getbowtied-t
 
 - Quick Start – Professionally designed eCommerce pages
 - Easy to Customize – Visual, drag-and-drop Page Builder
-- Incredibly Fast – Check now Shopkeeper’s Supersonic Speed with [GTMetrix](https://gtmetrix.com/reports/shopkeeper.wp-theme.design/q2Ehzuth/) or [Google Pagespeed](https://pagespeed.web.dev/report?url=https%3A%2F%2Fshopkeeper.wp-theme.design%2F)
+- Incredibly Fast
 
 Are you ready to take your business to the next level and stand out from the competition?
 
@@ -136,6 +136,10 @@ Start your journey to success today and elevate your online store to the next le
 [Shopkeeper Demo](https://shopkeeper.wp-theme.design/)
 
 == Changelog ==
+
+= 4.0 =
+- Recheck Compatibility with WordPress 6.7
+- Recheck Compatibility with WooCommerce 9.4.1
 
 = 3.8 =
 - Recheck Compatibility with WordPress 6.6.1
