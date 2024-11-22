@@ -1,0 +1,14 @@
+<?php
+
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+// Use the init method to ensure proper initialization
+$gbt_dashboard_setup = GBT_Dashboard_Setup::init();
+$base_paths = $gbt_dashboard_setup->get_base_paths();
+
+include_once( $base_paths['path'] . '/dashboard/inc/pages/setup.php' );
+
+// Only include pointers if theme is not Block Shop
+if ($gbt_dashboard_setup->get_theme_slug() !== 'block-shop') {
+    include_once( $base_paths['path'] . '/dashboard/inc/pointers/pointers.php' );
+}

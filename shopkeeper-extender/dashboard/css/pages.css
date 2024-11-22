@@ -1,0 +1,45 @@
+#getbowtied_dashboard_iframe {
+  width: 100%;
+  min-width: 100%;
+  min-height: calc(100vh - 32px);
+  opacity: 0;
+  -webkit-animation: fadeInFromNone 0.3s ease-out;
+          animation: fadeInFromNone 0.3s ease-out;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+  -webkit-animation-delay: 1s;
+          animation-delay: 1s;
+}
+
+@-webkit-keyframes fadeInFromNone {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInFromNone {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+/* Freemius */
+.fs-notice[data-id=connect_account].fs-slug-shopkeeper, .fs-notice[data-id=connect_account].fs-slug-block-shop, .fs-notice[data-id=connect_account].fs-slug-theretailer, .fs-notice[data-id=connect_account].fs-slug-mrtailor, .fs-notice[data-id=connect_account].fs-slug-the-hanger, .fs-notice[data-id=connect_account].fs-slug-merchandiser, .fs-notice[data-id=activation_pending].fs-slug-shopkeeper, .fs-notice[data-id=activation_pending].fs-slug-block-shop, .fs-notice[data-id=activation_pending].fs-slug-theretailer, .fs-notice[data-id=activation_pending].fs-slug-mrtailor, .fs-notice[data-id=activation_pending].fs-slug-the-hanger, .fs-notice[data-id=activation_pending].fs-slug-merchandiser {
+  color: inherit;
+  border-left-color: #d63638;
+}
+.fs-notice[data-id=connect_account].fs-slug-shopkeeper .fs-close, .fs-notice[data-id=connect_account].fs-slug-block-shop .fs-close, .fs-notice[data-id=connect_account].fs-slug-theretailer .fs-close, .fs-notice[data-id=connect_account].fs-slug-mrtailor .fs-close, .fs-notice[data-id=connect_account].fs-slug-the-hanger .fs-close, .fs-notice[data-id=connect_account].fs-slug-merchandiser .fs-close, .fs-notice[data-id=activation_pending].fs-slug-shopkeeper .fs-close, .fs-notice[data-id=activation_pending].fs-slug-block-shop .fs-close, .fs-notice[data-id=activation_pending].fs-slug-theretailer .fs-close, .fs-notice[data-id=activation_pending].fs-slug-mrtailor .fs-close, .fs-notice[data-id=activation_pending].fs-slug-the-hanger .fs-close, .fs-notice[data-id=activation_pending].fs-slug-merchandiser .fs-close {
+  display: none;
+}
+
+.fs-box-container .gbt_fs_complete_activation_link {
+  text-decoration: none !important;
+}
+.fs-box-container .gbt_fs_complete_activation_link strong {
+  font-weight: normal;
+}
