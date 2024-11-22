@@ -4,7 +4,7 @@
  * Plugin Name:       		Shopkeeper Extender
  * Plugin URI:        		https://shopkeeper.wp-theme.design/
  * Description:       		Extends the functionality of Shopkeeper with theme specific features.
- * Version:           		4.1.4
+ * Version:           		4.1.5
  * Author:            		Get Bowtied
  * Author URI:				https://getbowtied.com
  * Text Domain:				shopkeeper-extender
@@ -26,6 +26,7 @@ if ( ! class_exists( 'ShopkeeperExtender' ) ) :
 
 		private static $instance = null;
 		private static $initialized = false;
+		private $theme_slug;
 
 		private function __construct() {
 			// Empty constructor - initialization happens in init_instance
