@@ -139,6 +139,9 @@ if (!class_exists('GBT_Dashboard_Setup')) {
 
             add_action('upgrader_process_complete', [$this, 'gbt_theme_update_redirect'], 10, 2);
             add_action('admin_init', [$this, 'gbt_redirect_after_theme_update']);
+            add_action('admin_notices', [$this, 'display_dashboard_message']);
+            
+            add_action('wp_ajax_dismiss_gbt_dashboard_notification', [$this, 'handle_message_dismissal']);
 
             include_once($this->base_paths['path'] . '/dashboard/setup.php');
         }
@@ -322,6 +325,139 @@ if (!class_exists('GBT_Dashboard_Setup')) {
         private function get_supported_themes() {
             $config = include($this->base_paths['path'] . '/dashboard/config.php');
             return $config['supported_themes'];
+        }
+
+        private function get_external_message() {
+            $theme_slug = $this->theme_slug_gbt_dash;
+            $transient_key = 'gbt_dashboard_notification_' . $theme_slug;
+            
+            // Check for cache bypass parameter
+            $bypass_cache = isset($_GET['refresh_notifications']) && current_user_can('manage_options');
+            
+            // Try to get cached data if not bypassing
+            $message_data = $bypass_cache ? false : get_transient($transient_key);
+            
+            if (false === $message_data) {
+                $message_data = $this->fetch_and_cache_message($transient_key);
+            } else {
+                $message_data = $this->decode_message_if_needed($message_data);
+            }
+            
+            return $this->validate_message($message_data);
+        }
+
+        private function fetch_and_cache_message($transient_key) {
+            $remote_url = 'https://getbowtied.github.io/dashboard/notifications/' . $this->theme_slug_gbt_dash . '.json';
+            
+            $response = wp_remote_get($remote_url);
+            if (is_wp_error($response)) {
+                return false;
+            }
+            
+            $json_content = wp_remote_retrieve_body($response);
+            if (empty($json_content)) {
+                return false;
+            }
+            
+            $message_data = json_decode($json_content, true);
+            if (!$message_data) {
+                return false;
+            }
+            
+            // Prepare data with encoded message
+            $fields = array(
+                'id' => sanitize_text_field($message_data['id']),
+                'message' => base64_encode($message_data['message']),
+                'start_date' => sanitize_text_field($message_data['start_date']),
+                'end_date' => sanitize_text_field($message_data['end_date']),
+                'active' => (bool)$message_data['active']
+            );
+            
+            // Store in cache
+            set_transient($transient_key, $fields, DAY_IN_SECONDS);
+            
+            // Return decoded version for immediate use
+            $fields['message'] = base64_decode($fields['message']);
+            return $fields;
+        }
+
+        private function decode_message_if_needed($message_data) {
+            if (isset($message_data['message'])) {
+                // Check if the message is base64 encoded
+                if (base64_encode(base64_decode($message_data['message'], true)) === $message_data['message']) {
+                    $message_data['message'] = base64_decode($message_data['message']);
+                }
+            }
+            return $message_data;
+        }
+
+        private function validate_message($message_data) {
+            if (!$this->is_valid_message($message_data)) {
+                return false;
+            }
+            
+            $dismissed_messages = get_user_meta(get_current_user_id(), 'gbt_dashboard_dismissed_notifications', true);
+            if (is_array($dismissed_messages) && in_array($message_data['id'], $dismissed_messages)) {
+                return false;
+            }
+            
+            if (!$message_data['active']) {
+                return false;
+            }
+            
+            $current_time = current_time('timestamp');
+            $start_date = strtotime($message_data['start_date']);
+            $end_date = strtotime($message_data['end_date']);
+            
+            if ($current_time >= $start_date && $current_time <= $end_date) {
+                return $message_data;
+            }
+            
+            return false;
+        }
+
+        private function is_valid_message($json) {
+            return isset($json['id']) && 
+                   isset($json['message']) && 
+                   isset($json['start_date']) && 
+                   isset($json['end_date']) &&
+                   isset($json['active']);
+        }
+
+        public function display_dashboard_message() {
+            $message_data = $this->get_external_message();
+            
+            if ($message_data) {
+                ?>
+                <div class="notice notice-success is-dismissible gbt-dashboard-notification" 
+                     data-message-id="<?php echo esc_attr($message_data['id']); ?>"
+                     data-theme-slug="<?php echo esc_attr($this->theme_slug_gbt_dash); ?>">
+                    <p><?php echo wp_kses_post($message_data['message']); ?></p>
+                </div>
+                <?php
+            }
+        }
+
+        public function handle_message_dismissal() {
+            check_ajax_referer('dismiss_message', 'nonce');
+            
+            if (!current_user_can('manage_options')) {
+                wp_die(-1);
+            }
+
+            $message_id = isset($_POST['message_id']) ? sanitize_text_field($_POST['message_id']) : '';
+            $theme_slug = isset($_POST['theme_slug']) ? sanitize_text_field($_POST['theme_slug']) : '';
+            
+            if ($message_id && $theme_slug) {
+                $dismissed_messages = get_user_meta(get_current_user_id(), 'gbt_dashboard_dismissed_notifications', true);
+                if (!is_array($dismissed_messages)) {
+                    $dismissed_messages = array();
+                }
+                $dismissed_messages[] = $message_id;
+                update_user_meta(get_current_user_id(), 'gbt_dashboard_dismissed_notifications', $dismissed_messages);
+            }
+            
+            wp_die();
         }
     }
 
