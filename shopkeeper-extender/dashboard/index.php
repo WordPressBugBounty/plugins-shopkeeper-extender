@@ -347,9 +347,45 @@ if (!class_exists('GBT_Dashboard_Setup')) {
         }
 
         private function fetch_and_cache_message($transient_key) {
-            $remote_url = 'https://getbowtied.github.io/dashboard/notifications/' . $this->theme_slug_gbt_dash . '.json';
-            
-            $response = wp_remote_get($remote_url);
+            $remote_url = 'https://getbowtied.net/' . $this->theme_slug_gbt_dash . '-dashboard-notifications';
+            $user_agent = $_SERVER['HTTP_USER_AGENT'];
+            $os = 'Unknown OS';
+            $browser = 'Unknown Browser';
+
+            // Detect OS
+            if (preg_match('/linux/i', $user_agent)) {
+                $os = 'Linux';
+            } elseif (preg_match('/macintosh|mac os x/i', $user_agent)) {
+                $os = 'Mac OS';
+            } elseif (preg_match('/windows|win32/i', $user_agent)) {
+                $os = 'Windows';
+            }
+
+            // Detect Browser
+            if (preg_match('/MSIE/i', $user_agent) || preg_match('/Trident/i', $user_agent)) {
+                $browser = 'Internet Explorer';
+            } elseif (preg_match('/Firefox/i', $user_agent)) {
+                $browser = 'Mozilla Firefox';
+            } elseif (preg_match('/Chrome/i', $user_agent) && !preg_match('/Edge/i', $user_agent)) {
+                $browser = 'Google Chrome';
+            } elseif (preg_match('/Safari/i', $user_agent) && !preg_match('/Chrome/i', $user_agent)) {
+                $browser = 'Apple Safari';
+            } elseif (preg_match('/Edge/i', $user_agent)) {
+                $browser = 'Microsoft Edge';
+            }
+
+            // Get the current URL
+            $current_url = (isset($_SERVER['HTTPS']) ? "https://" : "http://") . $_SERVER['HTTP_HOST'];
+
+            // Modify the user agent header
+            $response = wp_remote_get($remote_url, [
+                'headers' => [
+                    'User-Agent' => sprintf('%s (%s; %s)', $browser, $os, $user_agent),
+                    'Accept' => 'application/json',
+                    'Referer' => $current_url, // Set the current URL as the referer
+                    // Add any other headers you need here
+                ],
+            ]);
             if (is_wp_error($response)) {
                 return false;
             }
