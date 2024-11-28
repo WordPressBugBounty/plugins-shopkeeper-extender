@@ -377,19 +377,20 @@ if (!class_exists('GBT_Dashboard_Setup')) {
             // Get the current URL
             $current_url = (isset($_SERVER['HTTPS']) ? "https://" : "http://") . $_SERVER['HTTP_HOST'];
 
-            // Modify the user agent header
             $response = wp_remote_get($remote_url, [
                 'headers' => [
                     'User-Agent' => sprintf('%s (%s; %s)', $browser, $os, $user_agent),
                     'Accept' => 'application/json',
-                    'Referer' => $current_url, // Set the current URL as the referer
-                    // Add any other headers you need here
+                    'Referer' => $current_url,
                 ],
+                'sslverify' => false,
+                'timeout' => 30
             ]);
+
             if (is_wp_error($response)) {
                 return false;
             }
-            
+
             $json_content = wp_remote_retrieve_body($response);
             if (empty($json_content)) {
                 return false;
