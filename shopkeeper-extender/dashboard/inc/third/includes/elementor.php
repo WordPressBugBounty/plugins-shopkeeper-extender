@@ -4,9 +4,7 @@ defined( 'ABSPATH' ) || exit;
 
 class Elementor_Gbt_Third_Party_Plugin {
 
-	const GBT_ELEMENTOR_AFF_LINK_PRICES = 'https://be.elementor.com/visit/?bta=208394&nci=5383';
-	const GBT_ELEMENTOR_AFF_LINK_HOMEPAGE = 'https://be.elementor.com/visit/?bta=208394&nci=5349';
-	const GBT_ELEMENTOR_AFF_LINK_DOCS = 'https://be.elementor.com/visit/?bta=208394&nci=5517';
+	const GBT_ELEMENTOR_PREFIX_AFF_LINK = 'https://be.elementor.com/visit/?bta=208394&brand=elementor&landingPage=';
 
 	// Setup
 	public function __construct()
@@ -66,12 +64,9 @@ class Elementor_Gbt_Third_Party_Plugin {
 	    	'gbt-third-party-plugins',
 	    	'gbt_elementor',
 	    	array(
-	    		'aff_text' => esc_html__( 'Get more with Elementor Pro', 'elementor' ),
-	    		'aff_link_prices' => self::GBT_ELEMENTOR_AFF_LINK_PRICES,
-	    		'aff_link_homepage' => self::GBT_ELEMENTOR_AFF_LINK_HOMEPAGE,
-	    		'aff_link_docs' => self::GBT_ELEMENTOR_AFF_LINK_DOCS,
 	    		'is_FREE' => is_plugin_active( 'elementor/elementor.php' ) ? TRUE : FALSE,
-	    		'is_PRO' => is_plugin_active( 'elementor-pro/elementor-pro.php' ) ? TRUE : FALSE
+	    		'is_PRO' => is_plugin_active( 'elementor-pro/elementor-pro.php' ) ? TRUE : FALSE,
+				'gbt_elementor_prefix_aff_link' => self::GBT_ELEMENTOR_PREFIX_AFF_LINK,
 	    	)
 	    );
 	}
