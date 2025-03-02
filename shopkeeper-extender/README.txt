@@ -2,8 +2,8 @@
 Contributors: getbowtied
 Tags: shopkeeper, woocommerce, theme
 Requires at least: 6.0
-Tested up to: 6.7.1
-Stable tag: 4.1.9
+Tested up to: 6.7.2
+Stable tag: 4.2
 Requires PHP: 7.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -137,16 +137,20 @@ Start your journey to success today and elevate your online store to the next le
 
 == Changelog ==
 
+= 4.2 =
+- Update Compatibility with WordPress 6.7.2
+- Update Compatibility with WooCommerce 9.7.0
+
 = 4.1.9 =
-- Recheck Compatibility with WordPress 6.7.1
+- Update Compatibility with WordPress 6.7.1
 
 = 4.0 =
-- Recheck Compatibility with WordPress 6.7
-- Recheck Compatibility with WooCommerce 9.4.1
+- Update Compatibility with WordPress 6.7
+- Update Compatibility with WooCommerce 9.4.1
 
 = 3.8 =
-- Recheck Compatibility with WordPress 6.6.1
-- Recheck Compatibility with WooCommerce 9.1.4
+- Update Compatibility with WordPress 6.6.1
+- Update Compatibility with WooCommerce 9.1.4
 
 = 3.7 =
 - Fix vulnerability issue with [image_slide] shortcode round 2
@@ -155,28 +159,28 @@ Start your journey to success today and elevate your online store to the next le
 - Fix vulnerability issue with [image_slide] shortcode
 
 = 3.5 =
-- Recheck Compatibility with WordPress 6.4.2
+- Update Compatibility with WordPress 6.4.2
 - TikTok Icon Added is Social Share
 
 = 3.4.1 =
-- Recheck Compatibility with WooCommerce 8.4
+- Update Compatibility with WooCommerce 8.4
 
 = 3.3 =
-- Recheck Compatibility with WordPress 6.4.1
-- Recheck Compatibility with WooCommerce 8.3.1
+- Update Compatibility with WordPress 6.4.1
+- Update Compatibility with WooCommerce 8.3.1
 
 = 3.0 =
 - Small maintenance updates
 
 = 2.8 =
-- Recheck Compatibility with WordPress 6.2.2
-- Recheck Compatibility with WooCommerce 7.9.0
+- Update Compatibility with WordPress 6.2.2
+- Update Compatibility with WooCommerce 7.9.0
 
 = 2.6 =
-- Recheck Compatibility with WordPress 6.1.1
+- Update Compatibility with WordPress 6.1.1
 
 = 2.5 =
-- Recheck Compatibility with WooCommerce 7.5.0
+- Update Compatibility with WooCommerce 7.5.0
 
 = 2.4 =
 - Small maintenance updates

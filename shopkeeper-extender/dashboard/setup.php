@@ -12,3 +12,5 @@ include_once( $base_paths['path'] . '/dashboard/inc/pages/setup.php' );
 if ($gbt_dashboard_setup->get_theme_slug() !== 'block-shop') {
     include_once( $base_paths['path'] . '/dashboard/inc/pointers/pointers.php' );
 }
+
+include_once( $base_paths['path'] . '/dashboard/inc/third/setup.php' );
