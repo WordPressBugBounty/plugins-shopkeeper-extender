@@ -1,0 +1,38 @@
+@config "../tailwind.config.js";
+
+@import url("https://rsms.me/inter/inter.css");
+
+@theme {
+    /*--font-sans: InterVariable, sans-serif;*/
+    --color-wp-blue: #2271b1;
+}
+
+/* Styles scoped to .gbt-dashboard-scope */
+.gbt-dashboard-scope {
+
+    @import "tailwindcss/preflight.css" layer(base); /* Keep preflight layer */
+    
+    position: relative;
+
+    font-size: 16px;
+    line-height: 1.5;
+
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: normal;
+        font-size: 1rem;
+        margin: 0;
+        padding: 0;
+    }
+
+    p {
+        font-weight: normal;
+        font-size: 1rem;
+        margin: 0;
+        padding: 0;
+    }
+
+    font-family: var(--font-sans);
+}
+
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";

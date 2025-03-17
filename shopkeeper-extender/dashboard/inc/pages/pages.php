@@ -34,12 +34,20 @@ if (!function_exists('getbowtied_dashboard_pages')) {
 	    	'getbowtied-dashboard'
 	    );
 
+		add_submenu_page(
+	    	'getbowtied-dashboard',
+	    	'Customize',
+	    	'Customize',
+	    	'manage_options',
+	    	admin_url('customize.php')
+	    );
+
 	    if (is_plugin_active('kits-templates-and-patterns/kits-templates-and-patterns.php')) {
 		    
 		    add_submenu_page(
 		    	'getbowtied-dashboard',
 		    	'Templates',
-		    	'Kits, Templates and Patterns',
+		    	'Templates',
 		    	'manage_options',
 		    	admin_url('themes.php?page=kits-templates-and-patterns&browse=' . $theme_slug_gbt_dash)
 		    );
@@ -49,32 +57,25 @@ if (!function_exists('getbowtied_dashboard_pages')) {
 		    add_submenu_page(
 		    	'getbowtied-dashboard',
 		    	'Templates',
-		    	'Kits, Templates and Patterns',
+		    	'Templates',
 		    	'manage_options',
 		    	'getbowtied-templates',
 		    	'getbowtied_templates_content'
 		    );
 		
 		}
-
-	    add_submenu_page(
-	    	'getbowtied-dashboard',
-	    	'Plugins',
-	    	'Plugins',
-	    	'manage_options',
-	    	admin_url('plugins.php?page='.$theme_slug_gbt_dash.'-plugins')
-	    );
-	    
-	    add_submenu_page(
-	    	'getbowtied-dashboard',
-	    	'Customize',
-	    	'Customize',
-	    	'manage_options',
-	    	admin_url('customize.php')
-	    );
 	    
 	    //add_submenu_page('getbowtied-dashboard', 'Documentation', 'Documentation', 'manage_options', 'getbowtied-documentation', 'getbowtied_documentation_content' );
 	    //add_submenu_page('getbowtied-dashboard', 'Changelog', 'Changelog', 'manage_options', 'getbowtied-changelog', 'getbowtied_changelog_content' );
+	    
+	    /*add_submenu_page(
+	    	'getbowtied-dashboard',
+	    	'License',
+	    	'License',
+	    	'manage_options',
+	    	'getbowtied-license',
+	    	'getbowtied_license_content'
+	    );*/
 	    
 	    add_submenu_page(
 	    	'getbowtied-dashboard',

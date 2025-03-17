@@ -9,9 +9,11 @@ $base_paths = $gbt_dashboard_setup->get_base_paths();
 // Update includes to use base_paths
 include_once( $base_paths['path'] . '/dashboard/inc/pages/includes.php' );
 include_once( $base_paths['path'] . '/dashboard/inc/pages/pages.php' );
+include_once( $base_paths['path'] . '/dashboard/inc/pages/pages-order.php' );
 
 include_once( $base_paths['path'] . '/dashboard/inc/pages/content/home.php' );
 include_once( $base_paths['path'] . '/dashboard/inc/pages/content/templates.php' );
 include_once( $base_paths['path'] . '/dashboard/inc/pages/content/documentation.php' );
 include_once( $base_paths['path'] . '/dashboard/inc/pages/content/changelog.php' );
 include_once( $base_paths['path'] . '/dashboard/inc/pages/content/help.php' );
+include_once( $base_paths['path'] . '/dashboard/inc/pages/content/license.php' );

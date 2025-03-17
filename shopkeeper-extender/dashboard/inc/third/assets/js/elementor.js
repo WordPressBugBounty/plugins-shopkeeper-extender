@@ -57,10 +57,10 @@ jQuery(function($) {
 
 		// Configure observer to monitor the entire DOM tree
 		observer.observe(document.body, {
-			childList: true,    // Track element additions/removals
-			subtree: true,      // Include all descendants
-			attributes: false,  // Ignore attribute changes
-			characterData: false // Ignore text content changes
+			childList: true,    	// Track element additions/removals
+			subtree: true,      	// Include all descendants
+			attributes: false,  	// Ignore attribute changes
+			characterData: false 	// Ignore text content changes
 		});
 	}
 

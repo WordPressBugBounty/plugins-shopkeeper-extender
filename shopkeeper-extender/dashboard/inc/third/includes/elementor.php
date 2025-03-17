@@ -6,6 +6,8 @@ class Elementor_Gbt_Third_Party_Plugin {
 
 	const GBT_ELEMENTOR_PREFIX_AFF_LINK = 'https://be.elementor.com/visit/?bta=208394&brand=elementor&landingPage=';
 
+	const GBT_ELEMENTOR_LINK_1 = 'https://elementor.com/pro/';
+
 	// Setup
 	public function __construct()
 	{
@@ -14,6 +16,10 @@ class Elementor_Gbt_Third_Party_Plugin {
 			add_action( 'admin_init', array( $this, 'elementor_go_pro_link' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 			add_action( 'elementor/editor/after_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		}
+
+		if ( is_plugin_active( 'pro-elements/pro-elements.php' ) ) {
+			add_action( 'admin_head', array( $this, 'hide_elementor_notice' ) );
 		}
 	}
 
@@ -37,7 +43,7 @@ class Elementor_Gbt_Third_Party_Plugin {
 	{
 		if ( is_admin() && isset( $_GET['page'] ) && 'go_elementor_pro' === $_GET['page'] )
 		{
-			wp_redirect( self::GBT_ELEMENTOR_AFF_LINK_PRICES );
+			wp_redirect( self::GBT_ELEMENTOR_PREFIX_AFF_LINK . self::GBT_ELEMENTOR_LINK_1 );
 			exit;
 		}
 	}
@@ -69,6 +75,11 @@ class Elementor_Gbt_Third_Party_Plugin {
 				'gbt_elementor_prefix_aff_link' => self::GBT_ELEMENTOR_PREFIX_AFF_LINK,
 	    	)
 	    );
+	}
+
+	// Hide Elementor Notice
+	public function hide_elementor_notice() {
+		echo '<style>.e-notice { display: none !important; }</style>';
 	}
 
 }

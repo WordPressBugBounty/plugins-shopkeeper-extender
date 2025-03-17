@@ -6,18 +6,47 @@ if (!defined('ABSPATH')) {
 
 if (!function_exists('getbowtied_dashboard_pages_styles_and_scripts')) {
     function getbowtied_dashboard_pages_styles_and_scripts() {
+        // Check if we're on one of our pages
+        if (empty($_GET['page'])) {
+            return;
+        }
+
+        // Our page slugs based on actual registered pages
+        $our_pages = array(
+            'getbowtied-dashboard',    // Main dashboard page
+            'getbowtied-license',      // License page
+            'getbowtied-help',         // Help page
+            'getbowtied-templates'     // Templates page
+        );
+
+        add_filter('screen_options_show_screen', '__return_false');
+        
+        // Only load our assets on our pages
+        if (!in_array($_GET['page'], $our_pages)) {
+            return;
+        }
+
         // Create an instance of the GBT_Dashboard_Setup class
         $gbt_dashboard_setup = GBT_Dashboard_Setup::init();
         
         // Get base paths and theme version
         $base_paths = $gbt_dashboard_setup->get_base_paths();
         $theme_version_gbt_dash = $gbt_dashboard_setup->get_theme_version();
+        
+        // Tailwind CSS
+        wp_enqueue_style(
+            'getbowtied-dashboard-tailwind',
+            $base_paths['url'] . '/dashboard/css/dashboard.css',
+            array(),
+            $theme_version_gbt_dash,
+            'all'
+        );
 
-        // Styles
+        // Base Styles
         wp_enqueue_style(
             'getbowtied-dashboard-pages',
             $base_paths['url'] . '/dashboard/css/pages.css',
-            false,
+            array('getbowtied-dashboard-tailwind'), // Make pages.css load after Tailwind
             $theme_version_gbt_dash,
             'all'
         );
@@ -31,9 +60,11 @@ if (!function_exists('getbowtied_dashboard_pages_styles_and_scripts')) {
             true
         );
 
+        // Documentation and Changelog pages are commented out in pages.php
+        // Keeping the conditional for future use if these pages are enabled
         if (
-            (!empty($_GET['page']) && ('getbowtied-documentation' == $_GET['page'])) || 
-            (!empty($_GET['page']) && ('getbowtied-changelog' == $_GET['page']))
+            'getbowtied-documentation' === $_GET['page'] || 
+            'getbowtied-changelog' === $_GET['page']
         ) {
             wp_enqueue_script(
                 'getbowtied-iframe-resizer',
