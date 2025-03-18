@@ -5,8 +5,9 @@ defined( 'ABSPATH' ) || exit;
 class Elementor_Gbt_Third_Party_Plugin {
 
 	const GBT_ELEMENTOR_PREFIX_AFF_LINK = 'https://be.elementor.com/visit/?bta=208394&brand=elementor&landingPage=';
-
-	const GBT_ELEMENTOR_LINK_1 = 'https://elementor.com/pro/';
+	
+	const GBT_ELEMENTOR_PRO_LINK = 'https://elementor.com/pro/';
+	const GBT_ELEMENTOR_HELP_LINK = 'https://elementor.com/help/';
 
 	// Setup
 	public function __construct()
@@ -14,6 +15,7 @@ class Elementor_Gbt_Third_Party_Plugin {
 		if ( is_plugin_active( 'elementor/elementor.php' ) ) {
 			add_action( 'init', array( $this, 'remove_elementor_onboarding_redirection' ) );
 			add_action( 'admin_init', array( $this, 'elementor_go_pro_link' ) );
+			add_action( 'admin_init', array( $this, 'elementor_go_knowledge_base_link' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 			add_action( 'elementor/editor/after_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		}
@@ -43,7 +45,17 @@ class Elementor_Gbt_Third_Party_Plugin {
 	{
 		if ( is_admin() && isset( $_GET['page'] ) && 'go_elementor_pro' === $_GET['page'] )
 		{
-			wp_redirect( self::GBT_ELEMENTOR_PREFIX_AFF_LINK . self::GBT_ELEMENTOR_LINK_1 );
+			wp_redirect( self::GBT_ELEMENTOR_PREFIX_AFF_LINK . self::GBT_ELEMENTOR_PRO_LINK );
+			exit;
+		}
+	}
+
+	// Knowledge Base Link
+	public function elementor_go_knowledge_base_link()
+	{
+		if ( is_admin() && isset( $_GET['page'] ) && 'go_knowledge_base_site' === $_GET['page'] )
+		{
+			wp_redirect( self::GBT_ELEMENTOR_PREFIX_AFF_LINK . self::GBT_ELEMENTOR_HELP_LINK );
 			exit;
 		}
 	}
@@ -73,6 +85,7 @@ class Elementor_Gbt_Third_Party_Plugin {
 	    		'is_FREE' => is_plugin_active( 'elementor/elementor.php' ) ? TRUE : FALSE,
 	    		'is_PRO' => is_plugin_active( 'elementor-pro/elementor-pro.php' ) ? TRUE : FALSE,
 				'gbt_elementor_prefix_aff_link' => self::GBT_ELEMENTOR_PREFIX_AFF_LINK,
+				'gbt_elementor_pro_link' => self::GBT_ELEMENTOR_PRO_LINK
 	    	)
 	    );
 	}

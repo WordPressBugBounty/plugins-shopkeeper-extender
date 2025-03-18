@@ -5,6 +5,7 @@
 @theme {
     /*--font-sans: InterVariable, sans-serif;*/
     --color-wp-blue: #2271b1;
+    --color-wp-blue-darker: #135e96;
 }
 
 /* Styles scoped to .gbt-dashboard-scope */

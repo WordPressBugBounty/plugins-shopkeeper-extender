@@ -8,3 +8,6 @@ $base_paths = $gbt_dashboard_setup->get_base_paths();
 
 if ( ! class_exists( 'Elementor_Gbt_Third_Party_Plugin' ) )
 	include_once( $base_paths['path'] . '/dashboard/inc/third/includes/elementor.php' );
+
+if ( ! class_exists( 'YITH_Gbt_Third_Party_Plugin' ) )
+	include_once( $base_paths['path'] . '/dashboard/inc/third/includes/yith.php' );

@@ -4,7 +4,7 @@
  * Plugin Name:       		Shopkeeper Extender
  * Plugin URI:        		https://shopkeeper.wp-theme.design/
  * Description:       		Extends the functionality of Shopkeeper with theme specific features.
- * Version:           		4.6
+ * Version:           		4.7
  * Author:            		Get Bowtied
  * Author URI:				https://getbowtied.com
  * Text Domain:				shopkeeper-extender
