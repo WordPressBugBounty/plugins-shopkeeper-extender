@@ -1,0 +1,550 @@
+/**
+ * GetBowtied License Notifications
+ * Styles for license and subscription notifications that appear in the WordPress admin
+ */
+
+/* Custom Notification Styles */
+.getbowtied_ext_notice {
+  position: relative;
+  display: flex;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-inline-start-width: 4px;
+  margin: 5px 20px 15px 2px;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+/* Collapsible content - hidden by default */
+.getbowtied_ext_notice__collapsible_content {
+  display: none; /* Hide by default */
+}
+
+/* Make the title clickable */
+.getbowtied_ext_notice .title {
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-right: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 700;
+  display: inline-block;
+  background-color: #ffea00;
+  padding: 8px 15px;
+  border-radius: 0;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  position: relative;
+  border-left: 3px solid #d63638;
+  cursor: pointer; /* Indicate it's clickable */
+  transition: box-shadow 0.2s ease-in-out;
+  vertical-align: middle;
+  user-select: none; /* Prevent text selection */
+  -webkit-user-select: none; /* Safari support */
+  -moz-user-select: none; /* Firefox support */
+  -ms-user-select: none; /* IE/Edge support */
+}
+
+/* Add a small hover effect to indicate it's clickable */
+.getbowtied_ext_notice .title:hover {
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.25);
+}
+
+/* Remove the toggle button ::before pseudo-element */
+.getbowtied_ext_notice__content::before {
+  display: none;
+}
+
+/* When expanded (we'll use JavaScript to add this class) */
+.getbowtied_ext_notice__content.expanded .getbowtied_ext_notice__collapsible_content {
+  display: block;
+  animation: fadeInContent 0.3s ease-in-out;
+}
+
+/* Animation for fading in the content */
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Add the background icon directly to the notification container */
+.getbowtied_ext_notice::after {
+  content: "\f153";
+  font-family: dashicons;
+  position: absolute;
+  right: 0px;
+  bottom: -30px;
+  font-size: 400px;
+  opacity: 0;
+  line-height: 0.8;
+  color: #000;
+  z-index: 1;
+  pointer-events: none;
+  display: none; /* Hide by default */
+  margin: 0;
+  padding: 0;
+  transition: opacity 1.2s ease-in-out;
+}
+
+/* Show background icon only on extra large screens */
+@media screen and (min-width: 1200px) {
+  .getbowtied_ext_notice::after {
+    display: block; /* Show on extra large screens */
+    animation: fadeInBackground 1.2s ease-in-out forwards;
+  }
+}
+
+/* Animation for the background icon */
+@keyframes fadeInBackground {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.05;
+  }
+}
+
+/* Missing license notification - red styling with subtle background */
+.notice-error.getbowtied_ext_notice {
+  border-color: #d63638;
+  background-color: #fff8f8;
+}
+
+.notice-error.getbowtied_ext_notice .getbowtied_ext_notice__aside {
+  background: linear-gradient(135deg, #e54040, #d63638);
+}
+
+/* Expired subscription notification - white background */
+.notice-error.getbowtied_ext_notice.expired-notification {
+  background-color: #ffffff;
+}
+
+/* Warning notification styling */
+.notice-warning.getbowtied_ext_notice {
+  border-color: #dba617;
+  background-color: #ffffff;
+}
+
+.notice-warning.getbowtied_ext_notice .getbowtied_ext_notice__aside {
+  background: linear-gradient(135deg, #e2a817, #dba617);
+}
+
+/* General notification styling */
+.getbowtied_ext_notice.notice {
+  padding: 0;
+}
+
+/* Icon styling for notifications */
+.getbowtied_ext_notice .getbowtied_icon:before {
+  font-family: dashicons;
+  display: inline-block;
+  line-height: 1;
+  font-weight: 400;
+  font-style: normal;
+  speak: never;
+  text-decoration: inherit;
+  text-transform: none;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 26px;
+  height: 26px;
+  font-size: 26px;
+  vertical-align: top;
+  text-align: center;
+  padding: 5px;
+  border-radius: 50%;
+  content: "\f153"; /* WordPress dashicon code for forbidden/not allowed */
+  background: #d63638;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  position: relative;
+  animation: iconFlip 4s ease-in-out infinite;
+  transform-style: preserve-3d;
+  backface-visibility: visible;
+  perspective: 800px;
+}
+
+@keyframes iconFlip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  2% {
+    transform: rotateY(0deg);
+    animation-timing-function: ease-in-out;
+  }
+  4% {
+    transform: rotateY(90deg);
+  }
+  7% {
+    transform: rotateY(180deg);
+  }
+  10% {
+    transform: rotateY(270deg);
+  }
+  12% {
+    transform: rotateY(360deg);
+  }
+  14% {
+    transform: rotateY(360deg) translateY(0);
+    animation-timing-function: ease-out;
+  }
+  17% {
+    transform: rotateY(360deg) translateY(-5px);
+    animation-timing-function: ease-in;
+  }
+  20% {
+    transform: rotateY(360deg) translateY(0);
+    animation-timing-function: ease-out;
+  }
+  23% {
+    transform: rotateY(360deg) translateY(-3px);
+    animation-timing-function: ease-in;
+  }
+  26% {
+    transform: rotateY(360deg) translateY(0);
+  }
+  100% {
+    transform: rotateY(360deg) translateY(0);
+  }
+}
+
+/* Add fallback for browsers without good 3D support */
+@media screen and (prefers-reduced-motion: reduce) {
+  .getbowtied_ext_notice .getbowtied_icon:before {
+    animation: simplePulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes simplePulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+}
+
+/* Add a different icon for warning notifications */
+.notice-warning.getbowtied_ext_notice .getbowtied_icon:before {
+  content: "\f534"; /* WordPress dashicon code for warning */
+  background: #dba617;
+}
+
+.getbowtied_ext_notice .getbowtied_ext_notice__aside {
+  overflow: hidden;
+  width: 60px;
+  text-align: center;
+  padding-block-start: 17px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.getbowtied_ext_notice .getbowtied_ext_notice__aside:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.2) 10px,
+    rgba(255, 255, 255, 0.1) 10px,
+    rgba(255, 255, 255, 0.1) 20px
+  );
+}
+
+.getbowtied_ext_notice .getbowtied_ext_notice__content {
+  padding: 20px;
+  flex-grow: 1;
+  position: relative;
+  overflow: visible;
+  max-width: calc(100% - 450px); /* Add max-width to avoid text overlap with background icon */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* For small screens, allow full width */
+@media screen and (max-width: 1200px) {
+  .getbowtied_ext_notice .getbowtied_ext_notice__content {
+    max-width: 100%;
+  }
+}
+
+.getbowtied_ext_notice .getbowtied_ext_notice__content .u_dotted {
+  border-bottom: 1px dotted #333;
+}
+
+/* Specific colors for different notification types */
+.notice-error.getbowtied_ext_notice .title {
+  background-color: #ffea00;
+  color: #23282d;
+  border-left-color: #d63638;
+}
+
+.notice-warning.getbowtied_ext_notice .title {
+  background-color: #ffea00;
+  color: #23282d;
+  border-left-color: #dba617;
+}
+
+/* Styled lists for notifications */
+.getbowtied_ext_notice .getbowtied_ext_notice__content ul {
+  margin: 0.5em 0;
+  padding-left: 0.5em;
+  list-style-type: none;
+}
+
+.getbowtied_ext_notice .getbowtied_ext_notice__content ul li {
+  position: relative;
+  padding: 5px 0 5px 28px;
+  margin-bottom: 5px;
+  line-height: 1.4;
+}
+
+/* Remove the existing bullet point styling */
+.getbowtied_ext_notice .getbowtied_ext_notice__content ul li:before {
+  display: none;
+}
+
+/* Style dashicons in list items */
+.getbowtied_ext_notice .getbowtied_ext_notice__content ul li.dashicons-before:before {
+  display: inline-block;
+  position: absolute;
+  left: 0;
+  top: 5px;
+  font-size: 18px;
+  color: #d63638;
+  width: 22px;
+  height: 22px;
+  text-align: center;
+}
+
+/* Style icons in warning notifications */
+.notice-warning.getbowtied_ext_notice .getbowtied_ext_notice__content ul li.dashicons-before:before {
+  color: #dba617;
+}
+
+/* Style icons in error notifications */
+.notice-error.getbowtied_ext_notice .getbowtied_ext_notice__content ul li.dashicons-before:before {
+  color: #d63638;
+}
+
+/* Add spacing between paragraphs and lists */
+.getbowtied_ext_notice .getbowtied_ext_notice__content p + ul,
+.getbowtied_ext_notice .getbowtied_ext_notice__content ul + p {
+  margin-top: 0.7em;
+}
+
+.getbowtied_ext_notice .getbowtied_ext_notice__content h4 {
+  margin-top: 20px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #3c434a;
+}
+
+.getbowtied_ext_notice .getbowtied_ext_notice__content p {
+  margin: 0.8em 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #3c434a;
+}
+
+.getbowtied_ext_notice .getbowtied_ext_notice__content .u_dotted {
+  border-bottom: 1px dotted #23282d;
+  text-decoration: none;
+  padding-bottom: 1px;
+  transition: all 0.2s ease;
+}
+
+.getbowtied_ext_notice .getbowtied_ext_notice__content .u_dotted:hover {
+  border-bottom-color: #d63638;
+}
+
+/* Security Risk text styling */
+.getbowtied_ext_notice .getbowtied_ext_notice__content p:last-of-type:not(:last-child) {
+  font-weight: 500;
+  font-size: 14px;
+  background-color: rgba(214, 54, 56, 0.05);
+  border-left: 3px solid #d63638;
+  padding: 10px 15px;
+  margin: 15px 0;
+  border-radius: 0 3px 3px 0;
+}
+
+/* Add space before buttons */
+.getbowtied_ext_notice .button,
+.getbowtied_ext_notice .button-group,
+.getbowtied_ext_notice .action-buttons {
+  margin-top: 20px;
+  display: inline-block;
+}
+
+.getbowtied_ext_notice p + .button,
+.getbowtied_ext_notice p + .button-group,
+.getbowtied_ext_notice p + .action-buttons,
+.getbowtied_ext_notice ul + .button,
+.getbowtied_ext_notice ul + .button-group,
+.getbowtied_ext_notice ul + .action-buttons {
+  margin-top: 25px;
+}
+
+.notice-warning.getbowtied_ext_notice::after {
+  content: "\f534";
+}
+
+/* Add a class for red text in notifications */
+.getbowtied_ext_notice_red_text {
+  color: #d63638;
+}
+
+/* Style for the toggle link */
+.getbowtied_ext_notice__toggle_link {
+  display: inline-block;
+  margin-left: 20px;
+  color: #2271b1;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.4;
+  position: relative;
+  vertical-align: middle;
+  outline: none;
+}
+
+/* Hide toggle link on mobile devices */
+@media screen and (max-width: 782px) {
+  .getbowtied_ext_notice__toggle_link {
+    display: none;
+  }
+}
+
+/* Remove the arrow indicator */
+.getbowtied_ext_notice__toggle_link:after {
+  display: none;
+}
+
+/* Change arrow direction when expanded - now using text change instead */
+.getbowtied_ext_notice__content.expanded .getbowtied_ext_notice__toggle_link {
+  color: #135e96;
+}
+
+/* Hover and focus states */
+.getbowtied_ext_notice__toggle_link:hover,
+.getbowtied_ext_notice__toggle_link:focus {
+  color: #135e96;
+  text-decoration: none;
+  outline: none;
+  box-shadow: none;
+}
+
+/* Adjust title and link vertical alignment */
+.getbowtied_ext_notice .title,
+.getbowtied_ext_notice__toggle_link {
+  vertical-align: middle;
+}
+
+/* Hide dismiss button and Remind Me Later for no-license notification */
+.no-license-notification .notice-dismiss,
+.no-license-notification .dismiss-notification {
+    display: none !important;
+}
+
+/* Styles for Remind Me Later button */
+.getbowtied_ext_notice .dismiss-notification {
+  color: #777;
+  text-decoration: none;
+  margin-left: 10px;
+  font-size: 13px;
+  display: inline-block;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.getbowtied_ext_notice .dismiss-notification:hover {
+  color: #444;
+  text-decoration: underline;
+  opacity: 1;
+}
+
+/* Mobile adjustments for buttons and dismiss link */
+@media screen and (max-width: 782px) {
+  .getbowtied_ext_notice {
+    flex-direction: column;
+  }
+  
+  .getbowtied_ext_notice .getbowtied_ext_notice__aside {
+    width: 100%;
+    padding: 10px 0;
+    text-align: center;
+  }
+  
+  .getbowtied_ext_notice .getbowtied_ext_notice__content {
+    padding: 15px;
+  }
+  
+  .getbowtied_ext_notice .title {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin: 0 0 10px 0;
+  }
+  
+  .getbowtied_ext_notice__collapsible_content {
+    width: 100%;
+  }
+  
+  /* Button styling for mobile */
+  .getbowtied_ext_notice .button-primary,
+  .getbowtied_ext_notice .button-large,
+  .getbowtied_ext_notice p .button {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin: 0 0 8px 0;
+    box-sizing: border-box;
+  }
+  
+  /* Create a clean button container */
+  .getbowtied_ext_notice p:last-child {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+    margin-bottom: 0;
+  }
+  
+  /* Make Remind Me Later spacing consistent */
+  .getbowtied_ext_notice .dismiss-notification {
+    display: block;
+    text-align: center;
+    margin: 8px 0 0 0;
+    padding: 10px;
+    color: #666;
+    border-top: 1px solid #eee;
+  }
+  
+  /* Remove the &nbsp; spacing effect */
+  .getbowtied_ext_notice br,
+  .getbowtied_ext_notice p > br {
+    display: none;
+  }
+}
+
+/* Existing styles */
+.getbowtied_ext_notice .button,
+.getbowtied_ext_notice .button-primary {
+  margin-right: 0;
+  line-height: 32px !important;
+  height: 36px !important;
+}

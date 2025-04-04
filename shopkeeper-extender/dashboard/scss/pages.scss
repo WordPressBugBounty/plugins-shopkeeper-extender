@@ -9,49 +9,44 @@
 }
 
 @keyframes fadeInFromNone {
-    0% {
-        opacity: 0;
-    }
+	0% {
+		opacity: 0;
+	}
 
-    100% {
-        opacity: 1;
-    }
+	100% {
+		opacity: 1;
+	}
 }
 
 /* Freemius */
 
 .fs-notice {
+
 	&[data-id='connect_account'],
-	&[data-id='activation_pending']
-	{
-		
+	&[data-id='activation_pending'] {
+
 		&.fs-slug-shopkeeper,
 		&.fs-slug-block-shop,
 		&.fs-slug-theretailer,
 		&.fs-slug-mrtailor,
 		&.fs-slug-the-hanger,
-		&.fs-slug-merchandiser
-		{
+		&.fs-slug-merchandiser {
 			color: inherit;
 			border-left-color: #d63638;
 
-			.fs-close
-			{
-			    display:none;
+			.fs-close {
+				display: none;
 			}
 		}
-		
+
 	}
 }
 
-.fs-box-container
-{
-	.gbt_fs_complete_activation_link
-	{		
+.fs-box-container {
+	.gbt_fs_complete_activation_link {
 		text-decoration: none !important;
 
-		strong
-		{
+		strong {
 			font-weight: normal;
 		}
 	}

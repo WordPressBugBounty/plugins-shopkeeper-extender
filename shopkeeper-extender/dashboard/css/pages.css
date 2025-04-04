@@ -28,11 +28,13 @@
     opacity: 1;
   }
 }
+
 /* Freemius */
 .fs-notice[data-id=connect_account].fs-slug-shopkeeper, .fs-notice[data-id=connect_account].fs-slug-block-shop, .fs-notice[data-id=connect_account].fs-slug-theretailer, .fs-notice[data-id=connect_account].fs-slug-mrtailor, .fs-notice[data-id=connect_account].fs-slug-the-hanger, .fs-notice[data-id=connect_account].fs-slug-merchandiser, .fs-notice[data-id=activation_pending].fs-slug-shopkeeper, .fs-notice[data-id=activation_pending].fs-slug-block-shop, .fs-notice[data-id=activation_pending].fs-slug-theretailer, .fs-notice[data-id=activation_pending].fs-slug-mrtailor, .fs-notice[data-id=activation_pending].fs-slug-the-hanger, .fs-notice[data-id=activation_pending].fs-slug-merchandiser {
   color: inherit;
   border-left-color: #d63638;
 }
+
 .fs-notice[data-id=connect_account].fs-slug-shopkeeper .fs-close, .fs-notice[data-id=connect_account].fs-slug-block-shop .fs-close, .fs-notice[data-id=connect_account].fs-slug-theretailer .fs-close, .fs-notice[data-id=connect_account].fs-slug-mrtailor .fs-close, .fs-notice[data-id=connect_account].fs-slug-the-hanger .fs-close, .fs-notice[data-id=connect_account].fs-slug-merchandiser .fs-close, .fs-notice[data-id=activation_pending].fs-slug-shopkeeper .fs-close, .fs-notice[data-id=activation_pending].fs-slug-block-shop .fs-close, .fs-notice[data-id=activation_pending].fs-slug-theretailer .fs-close, .fs-notice[data-id=activation_pending].fs-slug-mrtailor .fs-close, .fs-notice[data-id=activation_pending].fs-slug-the-hanger .fs-close, .fs-notice[data-id=activation_pending].fs-slug-merchandiser .fs-close {
   display: none;
 }

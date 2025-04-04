@@ -10,7 +10,10 @@ return [
             "theme_name"            => "Shopkeeper",
             "theme_docs_path"       => "/docs/shopkeeper/",
             "theme_changelog_path"  => "/documentation/shopkeeper/changelog/",
-            "theme_sales_page_url"  => "https://getbowtied.net/shopkeeper-themeforest"
+            "theme_sales_page_url"  => "https://getbowtied.net/shopkeeper-themeforest",
+            "theme_backend_download_url" => "1.envato.market/backend-download-shopkeeper",
+            "theme_default_price_regular_license"   => 59,
+            "theme_default_price_extended_license" => 2950
         ],
         "theretailer" => [
             "theme_infos_url"       => "https://getbowtied.com",
@@ -18,7 +21,10 @@ return [
             "theme_name"            => "The Retailer",
             "theme_docs_path"       => "/docs/the-retailer/",
             "theme_changelog_path"  => "/documentation/the-retailer/changelog-the-retailer/",
-            "theme_sales_page_url"  => "https://getbowtied.net/the-retailer-themeforest"
+            "theme_sales_page_url"  => "https://getbowtied.net/the-retailer-themeforest",
+            "theme_backend_download_url" => "1.envato.market/backend-download-the-retailer",
+            "theme_default_price_regular_license"   => 59,
+            "theme_default_price_extended_license" => 2950
         ],
         "mrtailor" => [
             "theme_infos_url"       => "https://getbowtied.com",
@@ -26,7 +32,10 @@ return [
             "theme_name"            => "Mr Tailor",
             "theme_docs_path"       => "/docs/mr-tailor/",
             "theme_changelog_path"  => "/documentation/mr-tailor/changelog-mr-tailor/",
-            "theme_sales_page_url"  => "https://getbowtied.net/mr-tailor-themeforest"
+            "theme_sales_page_url"  => "https://getbowtied.net/mr-tailor-themeforest",
+            "theme_backend_download_url" => "1.envato.market/backend-download-mr-tailor",
+            "theme_default_price_regular_license"   => 59,
+            "theme_default_price_extended_license" => 2950
         ],
         "merchandiser" => [
             "theme_infos_url"       => "https://getbowtied.com",
@@ -34,7 +43,10 @@ return [
             "theme_name"            => "Merchandiser",
             "theme_docs_path"       => "/docs/merchandiser/",
             "theme_changelog_path"  => "/documentation/merchandiser/changelog-merchandiser/",
-            "theme_sales_page_url"  => "https://getbowtied.net/merchandiser-themeforest"
+            "theme_sales_page_url"  => "https://getbowtied.net/merchandiser-themeforest",
+            "theme_backend_download_url" => "1.envato.market/backend-download-merchandiser",
+            "theme_default_price_regular_license"   => 59,
+            "theme_default_price_extended_license" => 2950
         ],
         "the-hanger" => [
             "theme_infos_url"       => "https://getbowtied.com",
@@ -42,7 +54,10 @@ return [
             "theme_name"            => "The Hanger",
             "theme_docs_path"       => "/docs/the-hanger/",
             "theme_changelog_path"  => "/documentation/the-hanger/changelog-the-hanger/",
-            "theme_sales_page_url"  => "https://getbowtied.net/the-hanger-themeforest"
+            "theme_sales_page_url"  => "https://getbowtied.net/the-hanger-themeforest",
+            "theme_backend_download_url" => "1.envato.market/backend-download-the-hanger",
+            "theme_default_price_regular_license"   => 59,
+            "theme_default_price_extended_license" => 2950
         ],
         "block-shop" => [
             "theme_infos_url"       => "https://woocommerce.com",
@@ -50,7 +65,15 @@ return [
             "theme_name"            => "Block Shop",
             "theme_docs_path"       => "/document/block-shop-theme/",
             "theme_changelog_path"  => "/products/block-shop/",
-            "theme_sales_page_url"  => "https://woocommerce.com/products/block-shop/"
+            "theme_sales_page_url"  => "https://woocommerce.com/products/block-shop/",
+            "theme_backend_download_url" => "https://woocommerce.com/products/block-shop/",
+            "theme_default_price_regular_license"   => 59,
+            "theme_default_price_extended_license" => 2950
         ]
     ],
-]; 
+    'support_prices' => [
+        'support_price_formula' => function($theme_price) {
+            return ceil((($theme_price - 12) * (1 - 0.125)) * 100) / 100;
+        }
+    ],
+];

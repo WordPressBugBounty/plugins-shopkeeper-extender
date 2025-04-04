@@ -2,38 +2,59 @@
 
 @import url("https://rsms.me/inter/inter.css");
 
-@theme {
-    /*--font-sans: InterVariable, sans-serif;*/
-    --color-wp-blue: #2271b1;
-    --color-wp-blue-darker: #135e96;
-}
-
 /* Styles scoped to .gbt-dashboard-scope */
 .gbt-dashboard-scope {
 
-    @import "tailwindcss/preflight.css" layer(base); /* Keep preflight layer */
-    
-    position: relative;
+	@import "tailwindcss/preflight.css" layer(base);
+	/* Keep preflight layer */
 
-    font-size: 16px;
-    line-height: 1.5;
+	position: relative;
 
-    h1, h2, h3, h4, h5, h6 {
-        font-weight: normal;
-        font-size: 1rem;
-        margin: 0;
-        padding: 0;
-    }
+	font-size: 16px;
+	line-height: 1.5;
 
-    p {
-        font-weight: normal;
-        font-size: 1rem;
-        margin: 0;
-        padding: 0;
-    }
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		font-weight: normal;
+		font-size: 1rem;
+		margin: 0;
+		padding: 0;
+	}
 
-    font-family: var(--font-sans);
+	p {
+		font-weight: normal;
+		font-size: 1rem;
+		margin: 0;
+		padding: 0;
+	}
+
+	font-family: var(--font-sans);
 }
 
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css";
+
+@theme {
+	--breakpoint-*: initial;
+	--breakpoint-3xs: 30rem;  /* Original: 16rem (256px) */
+	--breakpoint-2xs: 40rem;  /* Original: 18rem (288px) */
+	--breakpoint-xs: 50rem;   /* Original: 20rem (320px) */
+	--breakpoint-sm: 60rem;   /* Original: 24rem (384px) */
+	--breakpoint-md: 70rem;   /* Original: 28rem (448px) */
+	--breakpoint-lg: 80rem;   /* Original: 32rem (512px) */
+	--breakpoint-xl: 90rem;   /* Original: 36rem (576px) */
+	--breakpoint-2xl: 100rem; /* Original: 42rem (672px) */
+	--breakpoint-3xl: 110rem; /* Original: 48rem (768px) */
+	--breakpoint-4xl: 120rem; /* Original: 56rem (896px) */
+	--breakpoint-5xl: 130rem; /* Original: 64rem (1024px) */
+	--breakpoint-6xl: 140rem; /* Original: 72rem (1152px) */
+	--breakpoint-7xl: 150rem; /* Original: 80rem (1280px) */
+	/*--font-sans: InterVariable, sans-serif;*/
+	--color-wp-blue: #2271b1;
+	--color-wp-blue-darker: #135e96;
+	--color-wp-blue-lighter: #72aee6;
+}

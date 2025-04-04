@@ -304,6 +304,94 @@ if (!class_exists('GBT_Dashboard_Setup')) {
             return $this->theme_child_download_link_gbt_dash;
         }
 
+        public function get_theme_marketplace_id() {
+            return $this->theme_themeforest_id;
+        }
+
+        /**
+         * Get the theme sales page URL from config
+         * 
+         * @return string The URL to the theme's sales page
+         */
+        public function get_theme_sales_page_url() {
+            $themes = $this->get_supported_themes();
+            if (array_key_exists($this->theme_slug_gbt_dash, $themes)) {
+                return $themes[$this->theme_slug_gbt_dash]['theme_sales_page_url'];
+            }
+            return '';
+        }
+
+        /**
+         * Get a specific config value for the current theme
+         * 
+         * @param string $key The configuration key to retrieve
+         * @return string|null The config value or null if not found
+         */
+        public function get_theme_config($key) {
+            $themes = $this->get_supported_themes();
+            if (array_key_exists($this->theme_slug_gbt_dash, $themes) && isset($themes[$this->theme_slug_gbt_dash][$key])) {
+                return $themes[$this->theme_slug_gbt_dash][$key];
+            }
+            return null;
+        }
+
+        /**
+         * Get a config value from a global section (not theme-specific)
+         * 
+         * @param string $section The config section name
+         * @param string $key The configuration key to retrieve
+         * @return mixed|null The config value or null if not found
+         */
+        public function get_global_config($section, $key) {
+            $config = include($this->base_paths['path'] . '/dashboard/config.php');
+            if (isset($config[$section]) && isset($config[$section][$key])) {
+                return $config[$section][$key];
+            }
+            return null;
+        }
+
+        /**
+         * Check if license is active
+         * 
+         * @return boolean True if license is active, false otherwise
+         */
+        public function is_license_active() {
+            // Skip license check for Block Shop theme
+            if ($this->theme_slug_gbt_dash === "block-shop") {
+                return true;
+            }
+            
+            // Check if License_Manager class exists
+            if (!class_exists('GBT_License_Manager')) {
+                require_once $this->base_paths['path'] . '/dashboard/inc/classes/class-license-manager.php';
+            }
+            
+            // Get license manager instance and check status
+            $license_manager = GBT_License_Manager::get_instance();
+            return $license_manager->is_license_active();
+        }
+        
+        /**
+         * Check if support is active
+         * 
+         * @return boolean True if support is active, false otherwise
+         */
+        public function is_support_active() {
+            // Skip license check for Block Shop theme
+            if ($this->theme_slug_gbt_dash === "block-shop") {
+                return true;
+            }
+            
+            // Check if License_Manager class exists
+            if (!class_exists('GBT_License_Manager')) {
+                require_once $this->base_paths['path'] . '/dashboard/inc/classes/class-license-manager.php';
+            }
+            
+            // Get license manager instance and check status
+            $license_manager = GBT_License_Manager::get_instance();
+            return $license_manager->is_support_active();
+        }
+
         public function unsupported_theme_warning() {
             $supported_themes = $this->get_supported_themes();
             $theme_slug = $this->plugin_theme_slug_param_gbt_dash;
