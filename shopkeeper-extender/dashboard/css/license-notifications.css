@@ -17,6 +17,7 @@
 /* Collapsible content - hidden by default */
 .getbowtied_ext_notice__collapsible_content {
   display: none; /* Hide by default */
+  width: 100%;
 }
 
 /* Make the title clickable */
@@ -24,9 +25,7 @@
   margin-top: 0;
   margin-bottom: 0;
   margin-right: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  font-weight: 700;
+  text-transform: none;
   display: inline-block;
   background-color: #ffea00;
   padding: 8px 15px;
@@ -268,10 +267,38 @@
   flex-grow: 1;
   position: relative;
   overflow: visible;
-  max-width: calc(100% - 450px); /* Add max-width to avoid text overlap with background icon */
+  max-width: calc(100% - 450px);
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Title and toggle link container */
+.getbowtied_ext_notice .title-container {
+  display: flex;
   align-items: center;
+  width: 100%;
+}
+
+/* Move title into container */
+.getbowtied_ext_notice .title {
+  margin: 0;
+}
+
+/* Adjust toggle link position */
+.getbowtied_ext_notice__toggle_link {
+  margin-left: 20px;
+}
+
+/* Ensure collapsible content takes full width */
+.getbowtied_ext_notice__collapsible_content {
+  width: 100%;
+}
+
+/* Ensure proper spacing for paragraphs and headings */
+.getbowtied_ext_notice__collapsible_content p,
+.getbowtied_ext_notice__collapsible_content h4 {
+  width: 100%;
 }
 
 /* For small screens, allow full width */
@@ -457,25 +484,94 @@
 
 /* Hide dismiss button and Remind Me Later for no-license notification */
 .no-license-notification .notice-dismiss,
-.no-license-notification .dismiss-notification {
+.no-license-notification .dismiss-notification,
+.no-license-notification .reminder-options {
     display: none !important;
+}
+
+.no-license-notification .title strong {
+  font-weight: 700;
 }
 
 /* Styles for Remind Me Later button */
 .getbowtied_ext_notice .dismiss-notification {
-  color: #777;
-  text-decoration: none;
-  margin-left: 10px;
-  font-size: 13px;
-  display: inline-block;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
+    color: #2271b1;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 .getbowtied_ext_notice .dismiss-notification:hover {
-  color: #444;
-  text-decoration: underline;
-  opacity: 1;
+    color: #135e96;
+    text-decoration: underline;
+}
+
+/* Styles for reminder options */
+.getbowtied_ext_notice .reminder-options {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    border-top: 1px solid #dcdcde;
+    padding-top: 15px;
+    width: 100%;
+    justify-content: flex-end;
+}
+
+/* Style for reminder buttons */
+.getbowtied_ext_notice .reminder-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: transparent;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.5;
+    text-decoration: none;
+    color: #737373;
+    transition: all 0.2s ease-out;
+    margin-left: 5px;
+}
+
+.getbowtied_ext_notice .reminder-btn:hover {
+    background-color: rgba(0,0,0,0.02);
+    color: #50575e;
+    text-decoration: none;
+}
+
+.getbowtied_ext_notice .reminder-btn:before {
+    content: "\f469"; /* WordPress dashicon clock */
+    font-family: dashicons;
+    font-size: 14px;
+    margin-right: 4px;
+    line-height: 1;
+    opacity: 0.7;
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 782px) {
+    .getbowtied_ext_notice .reminder-options {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0; /* Reduce gap to 0 */
+        border-top: none;
+        margin-top: 0; /* Reduce margin */
+        padding-top: 0; /* Reduce padding */
+    }
+    
+    .getbowtied_ext_notice .reminder-btn {
+        text-align: center;
+        justify-content: center;
+        margin-left: 0;
+        border-top: 1px solid #dcdcde;
+        padding-top: 8px; /* Reduce padding */
+        padding-bottom: 8px; /* Reduce padding */
+        border-radius: 0;
+    }
+    
+    .getbowtied_ext_notice .reminder-btn:first-child {
+        border-top: 1px solid #dcdcde;
+    }
 }
 
 /* Mobile adjustments for buttons and dismiss link */
@@ -491,7 +587,7 @@
   }
   
   .getbowtied_ext_notice .getbowtied_ext_notice__content {
-    padding: 15px;
+    padding: 12px;
   }
   
   .getbowtied_ext_notice .title {
@@ -512,7 +608,7 @@
     display: block;
     width: 100%;
     text-align: center;
-    margin: 0 0 8px 0;
+    margin: 0 0 5px 0; /* Reduce bottom margin */
     box-sizing: border-box;
   }
   
@@ -520,7 +616,7 @@
   .getbowtied_ext_notice p:last-child {
     display: flex;
     flex-direction: column;
-    margin-top: 15px;
+    margin-top: 10px; /* Reduce top margin */
     margin-bottom: 0;
   }
   
@@ -528,10 +624,10 @@
   .getbowtied_ext_notice .dismiss-notification {
     display: block;
     text-align: center;
-    margin: 8px 0 0 0;
-    padding: 10px;
+    margin: 5px 0 0 0; /* Reduce top margin */
+    padding: 8px; /* Reduce padding */
     color: #666;
-    border-top: 1px solid #eee;
+    border-top: none;
   }
   
   /* Remove the &nbsp; spacing effect */

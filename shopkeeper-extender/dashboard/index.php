@@ -173,6 +173,38 @@ if (!class_exists('GBT_Dashboard_Setup')) {
         public function gbt_redirect_after_theme_update() {
             if (get_option('gbt_theme_updated_redirect')) {
                 delete_option('gbt_theme_updated_redirect');
+                
+                // Clear notification transients after theme update
+                if (class_exists('GBT_Notification_Handler')) {
+                    gbt_notification_handler()->clear_all_notification_transients();
+                }
+                
+                // Clear license notification dismissals to show them after update
+                if (class_exists('GBT_License_Subscription_Checker')) {
+                    $theme_slug = $this->get_theme_slug();
+                    
+                    // Get the option keys for dismissals
+                    $expired_option = 'getbowtied_theme_license_subscription_expired_dismissed';
+                    $expiring_option = 'getbowtied_theme_license_subscription_expiring_soon_dismissed';
+                    
+                    // Get the current dismissal data
+                    $expired_data = get_option($expired_option, []);
+                    $expiring_data = get_option($expiring_option, []);
+                    
+                    // Remove dismissals for this theme
+                    if (isset($expired_data[$theme_slug])) {
+                        unset($expired_data[$theme_slug]);
+                        update_option($expired_option, $expired_data);
+                    }
+                    
+                    if (isset($expiring_data[$theme_slug])) {
+                        unset($expiring_data[$theme_slug]);
+                        update_option($expiring_option, $expiring_data);
+                    }
+                    
+                    // The no-license notification also uses the expired_option, but we've already cleared that
+                }
+                
                 $this->redirect_to_dashboard();
             }
         }
@@ -517,16 +549,9 @@ if (!class_exists('GBT_Dashboard_Setup')) {
         }
 
         private function validate_message($message_data) {
-            if (!$this->is_valid_message($message_data)) {
-                return false;
-            }
-            
-            $dismissed_messages = get_user_meta(get_current_user_id(), 'gbt_dashboard_dismissed_notifications', true);
-            if (is_array($dismissed_messages) && in_array($message_data['id'], $dismissed_messages)) {
-                return false;
-            }
-            
-            if (!$message_data['active']) {
+            if (!$this->is_valid_message($message_data) || 
+                !$message_data['active'] || 
+                gbt_notification_handler()->is_dismissed($message_data['id'])) {
                 return false;
             }
             
@@ -534,11 +559,7 @@ if (!class_exists('GBT_Dashboard_Setup')) {
             $start_date = strtotime($message_data['start_date']);
             $end_date = strtotime($message_data['end_date']);
             
-            if ($current_time >= $start_date && $current_time <= $end_date) {
-                return $message_data;
-            }
-            
-            return false;
+            return ($current_time >= $start_date && $current_time <= $end_date) ? $message_data : false;
         }
 
         private function is_valid_message($json) {
@@ -550,19 +571,19 @@ if (!class_exists('GBT_Dashboard_Setup')) {
         }
 
         public function display_dashboard_message() {
-            $message_data = $this->get_external_message();
-            
-            if ($message_data) {
-                ?>
-                <div class="notice notice-success is-dismissible gbt-dashboard-notification" 
-                     data-message-id="<?php echo esc_attr($message_data['id']); ?>"
-                     data-theme-slug="<?php echo esc_attr($this->theme_slug_gbt_dash); ?>">
-                    <p><?php echo wp_kses_post($message_data['message']); ?></p>
-                </div>
-                <?php
+            if ($message_data = $this->get_external_message()) {
+                printf(
+                    '<div class="notice notice-success is-dismissible gbt-dashboard-notification" data-message-id="%s" data-theme-slug="%s"><p>%s</p></div>',
+                    esc_attr($message_data['id']),
+                    esc_attr($this->theme_slug_gbt_dash),
+                    wp_kses_post($message_data['message'])
+                );
             }
         }
 
+        /**
+         * Handle message dismissal via AJAX (Legacy method)
+         */
         public function handle_message_dismissal() {
             check_ajax_referer('dismiss_message', 'nonce');
             
@@ -571,15 +592,9 @@ if (!class_exists('GBT_Dashboard_Setup')) {
             }
 
             $message_id = isset($_POST['message_id']) ? sanitize_text_field($_POST['message_id']) : '';
-            $theme_slug = isset($_POST['theme_slug']) ? sanitize_text_field($_POST['theme_slug']) : '';
             
-            if ($message_id && $theme_slug) {
-                $dismissed_messages = get_user_meta(get_current_user_id(), 'gbt_dashboard_dismissed_notifications', true);
-                if (!is_array($dismissed_messages)) {
-                    $dismissed_messages = array();
-                }
-                $dismissed_messages[] = $message_id;
-                update_user_meta(get_current_user_id(), 'gbt_dashboard_dismissed_notifications', $dismissed_messages);
+            if ($message_id) {
+                gbt_notification_handler()->save_dismissal($message_id);
             }
             
             wp_die();

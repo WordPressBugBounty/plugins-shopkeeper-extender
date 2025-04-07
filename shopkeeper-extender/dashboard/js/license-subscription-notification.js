@@ -6,6 +6,11 @@
 (function($) {
     'use strict';
     
+    // Configuration
+    const config = {
+        autoExpandNoLicense: false // Set to true to auto-expand no-license notifications
+    };
+    
     // Wait for DOM to be ready
     $(function() {
         // Target both expired and expiring soon notifications
@@ -15,8 +20,8 @@
             return;
         }
         
-        // Auto-expand no-license notification when not on the license page
-        if (!window.location.href.includes('page=getbowtied-license')) {
+        // Auto-expand no-license notification when configured
+        if (config.autoExpandNoLicense && !window.location.href.includes('page=getbowtied-license')) {
             // Add a slight delay to ensure DOM is fully loaded and ready
             setTimeout(function() {
                 const $noLicenseNotification = $('.no-license-notification');
@@ -28,14 +33,65 @@
             }, 500); // 500ms delay
         }
         
-        // Handle dismiss button click - updated for Remind Me Later button
+        // Function to toggle content visibility
+        function toggleContent($content) {
+            // Toggle the expanded class
+            $content.toggleClass('expanded');
+            
+            // Update the More details link text based on expanded state
+            const $link = $content.find('.getbowtied_ext_notice__toggle_link');
+            $link.text($content.hasClass('expanded') ? 'Hide details' : 'Click for details');
+        }
+        
+        // Toggle collapsible content when clicking on title
+        $notifications.on('click', '.title', function(e) {
+            e.preventDefault();
+            const $content = $(this).closest('.getbowtied_ext_notice__content');
+            toggleContent($content);
+        });
+        
+        // Toggle collapsible content when clicking on the "More details" link
+        $notifications.on('click', '.getbowtied_ext_notice__toggle_link', function(e) {
+            e.preventDefault();
+            const $content = $(this).closest('.getbowtied_ext_notice__content');
+            toggleContent($content);
+        });
+        
+        // Handle both "View License Details" and "Activate Your License Now" button clicks
+        $notifications.on('click', 'a[href*="page=getbowtied-license"]', function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            
+            // Navigate to the license page if we're not already there
+            if (!window.location.href.includes('page=getbowtied-license')) {
+                // Simply navigate to the URL without any scroll parameter
+                window.location.href = href;
+                return;
+            }
+            
+            // If we're already on the license page, scroll to the dashboard scope
+            scrollToDashboard();
+        });
+        
+        // Check if we need to scroll on page load (coming from external page)
+        function scrollToDashboard() {
+            var $target = $('.gbt-dashboard-scope');
+            if ($target.length) {
+                $('html, body').animate({
+                    scrollTop: $target.offset().top
+                }, 500);
+            }
+        }
+        
+        // Handle dismiss button click - updated for individual reminder buttons
         $notifications.on('click', '.dismiss-notification', function(e) {
-            // Prevent default action since this is now an anchor tag
+            // Prevent default action
             e.preventDefault();
             
             const $button = $(this);
             const messageId = $button.data('message-id');
             const themeSlug = $button.data('theme-slug');
+            const days = $button.data('days');
             const $notification = $button.closest('.gbt-dashboard-notification');
             
             // Validate data attributes
@@ -52,6 +108,7 @@
                     action: 'dismiss_license_subscription_notification',
                     message_id: messageId,
                     theme_slug: themeSlug,
+                    days: days,
                     nonce: gbtLicenseSubscriptionData.nonce
                 },
                 success: function(response) {
@@ -106,56 +163,6 @@
                     console.error('AJAX error:', error);
                 }
             });
-        });
-        
-        // Handle both "View License Details" and "Activate Your License Now" button clicks
-        $notifications.on('click', 'a[href*="page=getbowtied-license"]', function(e) {
-            e.preventDefault();
-            var href = $(this).attr('href');
-            
-            // Navigate to the license page if we're not already there
-            if (!window.location.href.includes('page=getbowtied-license')) {
-                // Simply navigate to the URL without any scroll parameter
-                window.location.href = href;
-                return;
-            }
-            
-            // If we're already on the license page, scroll to the dashboard scope
-            scrollToDashboard();
-        });
-        
-        // Check if we need to scroll on page load (coming from external page)
-        function scrollToDashboard() {
-            var $target = $('.gbt-dashboard-scope');
-            if ($target.length) {
-                $('html, body').animate({
-                    scrollTop: $target.offset().top
-                }, 500);
-            }
-        }
-        
-        // Function to toggle content visibility
-        function toggleContent($content) {
-            // Toggle the expanded class
-            $content.toggleClass('expanded');
-            
-            // Update the More details link text based on expanded state
-            const $link = $content.find('.getbowtied_ext_notice__toggle_link');
-            $link.text($content.hasClass('expanded') ? 'Hide details' : 'Click for details');
-        }
-        
-        // Toggle collapsible content when clicking on title
-        $notifications.on('click', '.title', function(e) {
-            e.preventDefault();
-            const $content = $(this).closest('.getbowtied_ext_notice__content');
-            toggleContent($content);
-        });
-        
-        // Toggle collapsible content when clicking on the "More details" link
-        $notifications.on('click', '.getbowtied_ext_notice__toggle_link', function(e) {
-            e.preventDefault();
-            const $content = $(this).closest('.getbowtied_ext_notice__content');
-            toggleContent($content);
         });
     });
 })(jQuery); 

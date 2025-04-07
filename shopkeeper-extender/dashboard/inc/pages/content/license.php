@@ -249,20 +249,29 @@ if (!function_exists('getbowtied_license_content')) {
 
 		// Auto-verify license on page load if there's an active license
 		if (!empty($stored_options['license_key']) && !isset($_GET['license_updated'])) {
-			// Only do this if not immediately after a license update to avoid duplicate checks
-			$auto_check_result = $license_manager->cron_process_license();
+			// Check when the license was last verified and only perform the check
+			// if it has been more than 30 days since the last verification
+			$last_verified = $license_manager->get_last_verified_time();
+			$current_time = time();
+			$interval_days = 30;
+			$interval_seconds = $interval_days * DAY_IN_SECONDS;
+			
+			if ($current_time - $last_verified >= $interval_seconds) {
+				// Only do this if not immediately after a license update to avoid duplicate checks
+				$auto_check_result = $license_manager->cron_process_license();
 
-			// If the check failed due to domain restriction, the license will be cleared
-			// Update stored options to match the current state after verification
-			if ($auto_check_result && !$auto_check_result['success']) {
-				$stored_options = $auto_check_result['license_data'];
-				$license_key = $stored_options['license_key'] ?? '';
-				$license_status = $stored_options['license_status'] ?? 'inactive';
-				$license_info = $stored_options['license_info'] ?? [];
-				$support_expiration_date = $stored_options['support_expiration_date'] ?? '';
+				// If the check failed due to domain restriction, the license will be cleared
+				// Update stored options to match the current state after verification
+				if ($auto_check_result && !$auto_check_result['success']) {
+					$stored_options = $auto_check_result['license_data'];
+					$license_key = $stored_options['license_key'] ?? '';
+					$license_status = $stored_options['license_status'] ?? 'inactive';
+					$license_info = $stored_options['license_info'] ?? [];
+					$support_expiration_date = $stored_options['support_expiration_date'] ?? '';
 
-				// Set transient to show notification on this page load
-				set_transient('gbt_license_result', $auto_check_result, 60);
+					// Set transient to show notification on this page load
+					set_transient('gbt_license_result', $auto_check_result, 60);
+				}
 			}
 		}
 
@@ -881,13 +890,13 @@ if (!function_exists('getbowtied_license_content')) {
 								<svg class="h-6 w-5 flex-none text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 									<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
 								</svg>
-								<span class="text-gray-600">Automatic critical security updates</span>
+								<span class="text-gray-600">Built-in critical security updates</span>
 							</li>
 							<li class="flex gap-x-3">
 								<svg class="h-6 w-5 flex-none text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 									<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
 								</svg>
-								<span class="text-gray-600">Automatic priority bug fixes</span>
+								<span class="text-gray-600">Built-in priority bug fixes</span>
 							</li>
 							<li class="flex gap-x-3">
 								<svg class="h-6 w-5 flex-none text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -964,7 +973,7 @@ if (!function_exists('getbowtied_license_content')) {
 								<svg class="h-6 w-5 flex-none text-wp-blue-lighter" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
 									<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
 								</svg>
-								Automatic critical security updates
+								Built-in critical security updates
 							</li>
 							<li class="flex gap-x-3">
 								<svg class="h-6 w-5 flex-none text-wp-blue-lighter" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
@@ -976,7 +985,7 @@ if (!function_exists('getbowtied_license_content')) {
 								<svg class="h-6 w-5 flex-none text-wp-blue-lighter" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
 									<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
 								</svg>
-								Automatic priority bug fixes
+								Built-in priority bug fixes
 							</li>
 							<li class="flex gap-x-3">
 								<svg class="h-6 w-5 flex-none text-wp-blue-lighter" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">

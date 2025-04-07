@@ -8,6 +8,7 @@ $base_paths = $gbt_dashboard_setup->get_base_paths();
 
 include_once( $base_paths['path'] . '/dashboard/inc/pages/setup.php' );
 include_once( $base_paths['path'] . '/dashboard/inc/classes/class-theme-li.php' );
+include_once( $base_paths['path'] . '/dashboard/inc/classes/class-gbt-notification-handler.php' );
 
 // Only include pointers if theme is not Block Shop
 if ($gbt_dashboard_setup->get_theme_slug() !== 'block-shop') {

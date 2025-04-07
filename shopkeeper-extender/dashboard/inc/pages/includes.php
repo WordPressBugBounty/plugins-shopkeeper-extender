@@ -89,22 +89,17 @@ if (!function_exists('getbowtied_dashboard_pages_styles_and_scripts')) {
 			);
 		}
 
-		// Dashboard Message
-		wp_enqueue_script(
-			'gbt-dashboard-notification',
-			$base_paths['url'] . '/dashboard/js/notifications.js',
-			array('jquery'),
-			$theme_version_gbt_dash,
-			true
-		);
+		if (isset($_GET['page']) && $_GET['page'] === 'getbowtied-theme-documentation') {
+			wp_enqueue_script(
+				'gbt-documentation-iframe',
+				$base_paths['url'] . '/dashboard/js/iframe.js',
+				array('jquery'),
+				$theme_version_gbt_dash,
+				true
+			);
+		}
 
-		wp_localize_script(
-			'gbt-dashboard-notification',
-			'gbtDashboard',
-			array(
-				'nonce' => wp_create_nonce('dismiss_message')
-			)
-		);
+		// Removed old Dashboard Message script - now using global notification handler
 	}
 
 	add_action('admin_enqueue_scripts', 'getbowtied_dashboard_pages_styles_and_scripts');

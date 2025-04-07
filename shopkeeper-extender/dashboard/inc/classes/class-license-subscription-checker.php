@@ -174,8 +174,10 @@ class GBT_License_Subscription_Checker
 			</div>
 
 			<div class="getbowtied_ext_notice__content">
-				<h3 class="title">CRITICAL ALERT: <?php echo esc_html($theme_name); ?> THEME LICENSE NOT DETECTED!</h3>
-				<a href="#" class="getbowtied_ext_notice__toggle_link">Click for details</a>
+				<div class="title-container">
+					<h3 class="title"><strong>CRITICAL ALERT:</strong> <?php echo esc_html($theme_name); ?> theme license not detected!</h3>
+					<a href="#" class="getbowtied_ext_notice__toggle_link">Click for details</a>
+				</div>
 				<div class="getbowtied_ext_notice__collapsible_content">
 					<p>Your <?php echo esc_html($theme_name); ?> theme is currently operating without a valid license key.</p>
 
@@ -189,10 +191,12 @@ class GBT_License_Subscription_Checker
 
 					<p>
 						<a href="<?php echo esc_url($license_page_url); ?>" class="button button-primary button-large">Activate Your License Now</a>
-						&nbsp;
 						<a href="<?php echo esc_url($purchase_url); ?>" target="_blank" class="button button-large">Get a License</a>
-						&nbsp;
-						<a href="#" class="dismiss-notification" data-message-id="license_no_license_detected" data-theme-slug="<?php echo esc_attr($theme_slug); ?>">Remind Me Later</a>
+						<span class="reminder-options">
+							<a href="#" class="dismiss-notification reminder-btn" data-message-id="license_no_license_detected" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="1">Remind me tomorrow</a>
+							<a href="#" class="dismiss-notification reminder-btn" data-message-id="license_no_license_detected" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="7">Remind me in 1 week</a>
+							<a href="#" class="dismiss-notification reminder-btn" data-message-id="license_no_license_detected" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="30">Remind me in 1 month</a>
+						</span>
 					</p>
 				</div>
 			</div>
@@ -222,8 +226,10 @@ class GBT_License_Subscription_Checker
 			</div>
 
 			<div class="getbowtied_ext_notice__content">
-				<h3 class="title">URGENT: YOUR <?php echo esc_html(strtoupper($theme_name)); ?> Professional Plan HAS EXPIRED!</h3>
-				<a href="#" class="getbowtied_ext_notice__toggle_link">Click for details</a>
+				<div class="title-container">
+					<h3 class="title">Your "<?php echo esc_html($theme_name); ?>" Professional Plan has expired</h3>
+					<a href="#" class="getbowtied_ext_notice__toggle_link">Click for details</a>
+				</div>
 				<div class="getbowtied_ext_notice__collapsible_content">
 					<h4>Your <?php echo esc_html($theme_name); ?> theme Professional Plan has ended, putting your website at risk.</h4>
 
@@ -232,8 +238,8 @@ class GBT_License_Subscription_Checker
 					</p>
 
 					<ul>
-						<li class="dashicons-before dashicons-shield-alt">Automatic critical security updates</li>
-						<li class="dashicons-before dashicons-update-alt">Automatic priority bug fixes, security & compatibility updates</li>
+						<li class="dashicons-before dashicons-shield-alt">Built-in critical security updates</li>
+						<li class="dashicons-before dashicons-update-alt">Built-in priority bug fixes, security & compatibility updates</li>
 						<li class="dashicons-before dashicons-admin-users">Expert assistance from a dedicated developer</li>
 					</ul>
 
@@ -248,7 +254,11 @@ class GBT_License_Subscription_Checker
 					<p>
 						<a href="<?php echo esc_url($license_details_url); ?>" class="button button-primary button-large">View Your License Details</a>
 						&nbsp;
-						<a href="#" class="dismiss-notification" data-message-id="<?php echo esc_attr($this->notification_settings['expired_id']); ?>" data-theme-slug="<?php echo esc_attr($theme_slug); ?>">Remind Me Later</a>
+						<span class="reminder-options">
+							<a href="#" class="dismiss-notification reminder-btn" data-message-id="<?php echo esc_attr($this->notification_settings['expired_id']); ?>" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="1">Remind me tomorrow</a>
+							<a href="#" class="dismiss-notification reminder-btn" data-message-id="<?php echo esc_attr($this->notification_settings['expired_id']); ?>" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="7">Remind me in 1 week</a>
+							<a href="#" class="dismiss-notification reminder-btn" data-message-id="<?php echo esc_attr($this->notification_settings['expired_id']); ?>" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="30">Remind me in 1 month</a>
+						</span>
 					</p>
 				</div>
 			</div>
@@ -259,7 +269,7 @@ class GBT_License_Subscription_Checker
 	/**
 	 * Display notification for subscription expiring soon
 	 * 
-	 * @param int $days_remaining Number of days remaining until expiration
+	 * @param int $days_remaining The number of days remaining until expiration
 	 */
 	public function display_expiring_soon_notification($days_remaining)
 	{
@@ -275,25 +285,30 @@ class GBT_License_Subscription_Checker
 		$license_details_url = $license_page_url;
 		$renew_url = $gbt_dashboard->get_theme_sales_page_url();
 
+		// Format days remaining text
+		$days_text = $days_remaining == 1 ? 'day' : 'days';
+
 	?>
 		<div class="notice-warning settings-error notice getbowtied_ext_notice gbt-dashboard-notification"
-			data-message-id="<?php echo esc_attr($this->notification_settings['expiring_soon_id']); ?>"
+			data-message-id="<?php echo esc_attr($this->notification_settings['expiring_soon_id']); ?>" 
 			data-theme-slug="<?php echo esc_attr($theme_slug); ?>">
 			<div class="getbowtied_ext_notice__aside">
 				<div class="getbowtied_icon" aria-hidden="true"><br></div>
 			</div>
 
 			<div class="getbowtied_ext_notice__content">
-				<h3 class="title">IMPORTANT: YOUR <?php echo esc_html(strtoupper($theme_name)); ?> Professional Plan <?php
+				<div class="title-container">
+					<h3 class="title">IMPORTANT: Your <?php echo esc_html($theme_name); ?> Professional Plan <?php
 																													if ($days_remaining == 0) {
-																														echo 'EXPIRES TODAY!';
+																														echo 'expires today!';
 																													} elseif ($days_remaining == 1) {
-																														echo 'EXPIRES TOMORROW!';
+																														echo 'expires tomorrow!';
 																													} else {
-																														echo 'EXPIRES IN ' . esc_html($days_remaining) . ' DAYS!';
+																														echo 'expires in ' . esc_html($days_remaining) . ' days!';
 																													}
 																													?></h3>
-				<a href="#" class="getbowtied_ext_notice__toggle_link">Click for details</a>
+					<a href="#" class="getbowtied_ext_notice__toggle_link">Click for details</a>
+				</div>
 				<div class="getbowtied_ext_notice__collapsible_content">
 					<h4>Your <?php echo esc_html($theme_name); ?> Professional Plan will expire on <?php echo esc_html($expiration_date); ?>, putting your site at risk.</h4>
 
@@ -310,8 +325,8 @@ class GBT_License_Subscription_Checker
 					</p>
 
 					<ul>
-						<li class="dashicons-before dashicons-shield-alt">Automatic critical security updates</li>
-						<li class="dashicons-before dashicons-update-alt">Automatic priority bug fixes, security & compatibility updates</li>
+						<li class="dashicons-before dashicons-shield-alt">Built-in critical security updates</li>
+						<li class="dashicons-before dashicons-update-alt">Built-in priority bug fixes, security & compatibility updates</li>
 						<li class="dashicons-before dashicons-admin-users">Expert assistance from a dedicated developer</li>
 					</ul>
 
@@ -322,12 +337,14 @@ class GBT_License_Subscription_Checker
 					<p>
 						<a href="<?php echo esc_url($license_details_url); ?>" class="button button-primary button-large">View Your License Details</a>
 						&nbsp;
-						<a href="#" class="dismiss-notification" data-message-id="<?php echo esc_attr($this->notification_settings['expiring_soon_id']); ?>" data-theme-slug="<?php echo esc_attr($theme_slug); ?>">Remind Me Later</a>
+						<span class="reminder-options">
+							<a href="#" class="dismiss-notification reminder-btn" data-message-id="<?php echo esc_attr($this->notification_settings['expiring_soon_id']); ?>" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="1">Remind me tomorrow</a>
+						</span>
 					</p>
 				</div>
 			</div>
 		</div>
-<?php
+	<?php
 	}
 
 	/**
@@ -370,9 +387,18 @@ class GBT_License_Subscription_Checker
 			return false;
 		}
 
-		// Check if dismiss period has passed
-		$dismissed_time = $dismissed[$theme_slug];
-		$dismiss_seconds = $this->notification_settings['dismiss_days'] * DAY_IN_SECONDS;
+		// Check if stored value is an array (new format) or timestamp (old format)
+		if (is_array($dismissed[$theme_slug])) {
+			$dismissed_time = $dismissed[$theme_slug]['time'];
+			$dismiss_days = $dismissed[$theme_slug]['days'];
+		} else {
+			// Legacy format - just a timestamp with default days
+			$dismissed_time = $dismissed[$theme_slug];
+			$dismiss_days = $this->notification_settings['dismiss_days'];
+		}
+
+		// Calculate dismiss period
+		$dismiss_seconds = $dismiss_days * DAY_IN_SECONDS;
 
 		// Still dismissed if within the dismissal period
 		if (time() < ($dismissed_time + $dismiss_seconds)) {
@@ -409,6 +435,7 @@ class GBT_License_Subscription_Checker
 		// Validate and sanitize input
 		$message_id = isset($_POST['message_id']) ? sanitize_text_field($_POST['message_id']) : '';
 		$theme_slug = isset($_POST['theme_slug']) ? sanitize_text_field($_POST['theme_slug']) : '';
+		$days = isset($_POST['days']) ? absint($_POST['days']) : $this->notification_settings['dismiss_days'];
 
 		// Get the appropriate dismiss option based on message ID
 		$dismiss_option = $this->get_dismiss_option_for_message($message_id);
@@ -417,8 +444,8 @@ class GBT_License_Subscription_Checker
 			wp_send_json_error('Invalid message ID');
 		}
 
-		// Save dismissal timestamp
-		$this->save_notification_dismissal($theme_slug, $dismiss_option);
+		// Save dismissal timestamp with days parameter
+		$this->save_notification_dismissal($theme_slug, $dismiss_option, $days);
 
 		wp_send_json_success();
 	}
@@ -436,6 +463,8 @@ class GBT_License_Subscription_Checker
 				return $this->notification_settings['dismiss_option'];
 			case $this->notification_settings['expiring_soon_id']:
 				return $this->notification_settings['dismiss_soon_option'];
+			case 'license_no_license_detected':
+				return $this->notification_settings['dismiss_option'];
 			default:
 				return false;
 		}
@@ -446,11 +475,16 @@ class GBT_License_Subscription_Checker
 	 *
 	 * @param string $theme_slug The theme slug to associate with dismissal
 	 * @param string $option_name The option name to update
+	 * @param int $days Number of days to dismiss for
 	 */
-	private function save_notification_dismissal($theme_slug, $option_name)
+	private function save_notification_dismissal($theme_slug, $option_name, $days = 1)
 	{
 		$dismissed = get_option($option_name, []);
-		$dismissed[$theme_slug] = time();
+		// Store both the time and the number of days to dismiss for
+		$dismissed[$theme_slug] = [
+			'time' => time(),
+			'days' => $days
+		];
 		update_option($option_name, $dismissed);
 	}
 
