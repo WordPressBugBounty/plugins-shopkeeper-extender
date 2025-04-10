@@ -110,19 +110,39 @@ if (!function_exists('getbowtied_license_content')) {
 		$theme_slug_gbt_dash = $gbt_dashboard_setup->get_theme_slug();
 		$theme_marketplace_id = $gbt_dashboard_setup->get_theme_marketplace_id();
 
+		// Update theme prices directly - load price updater class if needed
+		if (!class_exists('GBT_Theme_Price_Updater')) {
+			require_once $base_paths['path'] . '/dashboard/inc/classes/class-theme-price-updater.php';
+		}
+		$price_updater = GBT_Theme_Price_Updater::get_instance();
+		
 		// Get theme pricing information from configuration
 		$theme_default_price_regular_license = $gbt_dashboard_setup->get_theme_config('theme_default_price_regular_license');
 		$theme_default_price_extended_license = $gbt_dashboard_setup->get_theme_config('theme_default_price_extended_license');
+		
+		// Update the price data if needed
+		$last_verified = $price_updater->get_last_verification_time();
+		$twenty_four_hours = 86400; // 24 hours in seconds
+		if ((time() - $last_verified) > $twenty_four_hours) {
+			$price_updater->update_theme_price(
+				$theme_marketplace_id,
+				$theme_default_price_regular_license,
+				$theme_default_price_extended_license
+			);
+		}
 
 		// Check for sales by comparing live prices with default prices
 		$regular_license_is_sale = false;
 		$extended_license_is_sale = false;
 		$professional_license_is_sale = false; // Added for professional license
 
-		// Get the price data from options (updates happen automatically via admin_init)
-		$option_name = 'getbowtied_theme_live_price';
-		$price_data = get_option($option_name, false);
-		if ($price_data && isset($price_data['regular_license_price']) && isset($price_data['extended_license_price'])) {
+		// Get the price data using the updater class
+		$price_data = $price_updater->get_current_price_data(
+			$theme_default_price_regular_license,
+			$theme_default_price_extended_license
+		);
+		
+		if (isset($price_data['regular_license_price']) && isset($price_data['extended_license_price'])) {
 			// Compare live prices with default prices to check for sales
 			$regular_license_is_sale = $price_data['regular_license_price'] < $theme_default_price_regular_license;
 			$extended_license_is_sale = $price_data['extended_license_price'] < $theme_default_price_extended_license;
@@ -156,9 +176,8 @@ if (!function_exists('getbowtied_license_content')) {
 		$theme_default_price_regular_license = $live_price_regular_license;
 		$theme_default_price_extended_license = $live_price_extended_license;
 
-		// Get the last price verification time
-		$last_verified_option = 'getbowtied_theme_live_price_last_verified';
-		$price_last_verified = (int)get_option($last_verified_option, 0);
+		// Get the last price verification time using the price updater instance
+		$price_last_verified = $price_updater->get_last_verification_time();
 		$price_last_verified_date = '';
 		if ($price_last_verified) {
 			$wp_timezone = wp_timezone();
@@ -440,6 +459,11 @@ if (!function_exists('getbowtied_license_content')) {
 										</button>
 									<?php endif; ?>
 								</div>
+								
+								<div class="mt-40 text-sm text-gray-600">
+									<br /><br />
+									<strong>Having trouble with activation?</strong><br />Use the message box on <a href="https://1.envato.market/getbowtied-profile" target="_blank" class="text-wp-blue hover:text-wp-blue/90">our profile page</a> to get help with activation.
+								</div>
 							</div>
 
 							<!-- License Help Modal -->
@@ -459,17 +483,17 @@ if (!function_exists('getbowtied_license_content')) {
 													<div class="mt-2">
 														<p class="text-sm text-gray-500 mb-2">Follow these steps to locate your purchase code:</p>
 														<ol class="text-sm text-gray-600 list-decimal ml-5 mt-2 space-y-2">
-															<li>Go to <a href="<?php echo esc_url($gbt_dashboard_setup->get_theme_config('theme_backend_download_url')); ?>" target="_blank" class="text-wp-blue hover:underline">downloads</a> on your Envato account</li>
-															<li>Click the "Download" button next to <?php echo esc_html($theme_name_gbt_dash); ?> theme</li>
-															<li>Select "License certificate & purchase code" from the dropdown</li>
-															<li>Open the downloaded file and copy the <strong>Item Purchase Code</strong></li>
+															<li>Go to <a href="<?php echo esc_url($gbt_dashboard_setup->get_theme_config('theme_customer_support_url')); ?>" target="_blank" class="text-wp-blue hover:underline">theme support page</a> on your Envato account</li>
+															<li>Navigate to the <strong>Purchase codes</strong> at the bottom of the page</li>
+															<li>Select the purchase code</li>
+															<li>Copy the purchase code and paste it in the <strong>Purchase Code</strong> field below</li>
 														</ol>
 													</div>
 												</div>
 											</div>
 											<div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
 												<button type="button" id="close-license-help" class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 hover:ring-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 sm:mt-0 sm:w-auto transition duration-150 ease-in-out cursor-pointer">Close</button>
-												<a href="<?php echo esc_url($gbt_dashboard_setup->get_theme_config('theme_backend_download_url')); ?>" target="_blank" class="mt-3 inline-flex w-full justify-center rounded-md bg-wp-blue px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-wp-blue/90 sm:mt-0 sm:w-auto sm:mr-3 transition duration-150 ease-in-out cursor-pointer">Get Your Purchase Code</a>
+												<a href="<?php echo esc_url($gbt_dashboard_setup->get_theme_config('theme_customer_support_url')); ?>" target="_blank" class="mt-3 inline-flex w-full justify-center rounded-md bg-wp-blue px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-wp-blue/90 sm:mt-0 sm:w-auto sm:mr-3 transition duration-150 ease-in-out cursor-pointer">Get Your Purchase Code</a>
 											</div>
 										</div>
 									</div>

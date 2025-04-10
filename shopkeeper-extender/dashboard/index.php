@@ -180,6 +180,7 @@ if (!class_exists('GBT_Dashboard_Setup')) {
                 }
                 
                 // Clear license notification dismissals to show them after update
+                /* Commented out to prevent license notification reset on theme update
                 if (class_exists('GBT_License_Subscription_Checker')) {
                     $theme_slug = $this->get_theme_slug();
                     
@@ -204,6 +205,7 @@ if (!class_exists('GBT_Dashboard_Setup')) {
                     
                     // The no-license notification also uses the expired_option, but we've already cleared that
                 }
+                */
                 
                 $this->redirect_to_dashboard();
             }
@@ -504,7 +506,7 @@ if (!class_exists('GBT_Dashboard_Setup')) {
                     'Referer' => $current_url,
                 ],
                 'sslverify' => false,
-                'timeout' => 30
+                'timeout' => 10
             ]);
 
             if (is_wp_error($response)) {

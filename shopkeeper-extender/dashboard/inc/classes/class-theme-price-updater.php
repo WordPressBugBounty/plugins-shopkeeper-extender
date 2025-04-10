@@ -46,10 +46,8 @@ class GBT_Theme_Price_Updater
 	 */
 	public static function init(): void
 	{
-		add_action('admin_init', function () {
-			$instance = self::get_instance();
-			$instance->maybe_update_theme_price();
-		});
+		// Initialization is now handled directly in license.php
+		// No hooks are registered here
 	}
 
 	/**
@@ -183,7 +181,7 @@ class GBT_Theme_Price_Updater
 	{
 		// Send the request
 		$response = wp_remote_post($this->server_api_url, [
-			'timeout' => 30,
+			'timeout' => 10,
 			'body' => $post_data
 		]);
 		

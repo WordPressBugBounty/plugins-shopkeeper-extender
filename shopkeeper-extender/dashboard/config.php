@@ -11,7 +11,8 @@ return [
             "theme_docs_path"       => "/docs/shopkeeper/",
             "theme_changelog_path"  => "/documentation/shopkeeper/changelog/",
             "theme_sales_page_url"  => "https://getbowtied.net/shopkeeper-themeforest",
-            "theme_backend_download_url" => "1.envato.market/backend-download-shopkeeper",
+            "theme_backend_download_url" => "https://1.envato.market/backend-download-shopkeeper",
+            "theme_customer_support_url" => "https://1.envato.market/customer-support-shopkeeper",
             "theme_default_price_regular_license"   => 59,
             "theme_default_price_extended_license" => 2950
         ],
@@ -22,7 +23,8 @@ return [
             "theme_docs_path"       => "/docs/the-retailer/",
             "theme_changelog_path"  => "/documentation/the-retailer/changelog-the-retailer/",
             "theme_sales_page_url"  => "https://getbowtied.net/the-retailer-themeforest",
-            "theme_backend_download_url" => "1.envato.market/backend-download-the-retailer",
+            "theme_backend_download_url" => "https://1.envato.market/backend-download-the-retailer",
+            "theme_customer_support_url" => "https://1.envato.market/customer-support-the-retailer",
             "theme_default_price_regular_license"   => 59,
             "theme_default_price_extended_license" => 2950
         ],
@@ -33,7 +35,8 @@ return [
             "theme_docs_path"       => "/docs/mr-tailor/",
             "theme_changelog_path"  => "/documentation/mr-tailor/changelog-mr-tailor/",
             "theme_sales_page_url"  => "https://getbowtied.net/mr-tailor-themeforest",
-            "theme_backend_download_url" => "1.envato.market/backend-download-mr-tailor",
+            "theme_backend_download_url" => "https://1.envato.market/backend-download-mr-tailor",
+            "theme_customer_support_url" => "https://1.envato.market/customer-support-mr-tailor",
             "theme_default_price_regular_license"   => 59,
             "theme_default_price_extended_license" => 2950
         ],
@@ -44,7 +47,8 @@ return [
             "theme_docs_path"       => "/docs/merchandiser/",
             "theme_changelog_path"  => "/documentation/merchandiser/changelog-merchandiser/",
             "theme_sales_page_url"  => "https://getbowtied.net/merchandiser-themeforest",
-            "theme_backend_download_url" => "1.envato.market/backend-download-merchandiser",
+            "theme_backend_download_url" => "https://1.envato.market/backend-download-merchandiser",
+            "theme_customer_support_url" => "https://1.envato.market/customer-support-merchandiser",
             "theme_default_price_regular_license"   => 59,
             "theme_default_price_extended_license" => 2950
         ],
@@ -55,7 +59,8 @@ return [
             "theme_docs_path"       => "/docs/the-hanger/",
             "theme_changelog_path"  => "/documentation/the-hanger/changelog-the-hanger/",
             "theme_sales_page_url"  => "https://getbowtied.net/the-hanger-themeforest",
-            "theme_backend_download_url" => "1.envato.market/backend-download-the-hanger",
+            "theme_backend_download_url" => "https://1.envato.market/backend-download-the-hanger",
+            "theme_customer_support_url" => "https://1.envato.market/customer-support-the-hanger",
             "theme_default_price_regular_license"   => 59,
             "theme_default_price_extended_license" => 2950
         ],
@@ -67,6 +72,7 @@ return [
             "theme_changelog_path"  => "/products/block-shop/",
             "theme_sales_page_url"  => "https://woocommerce.com/products/block-shop/",
             "theme_backend_download_url" => "https://woocommerce.com/products/block-shop/",
+            "theme_customer_support_url" => "https://woocommerce.com/products/block-shop/",
             "theme_default_price_regular_license"   => 59,
             "theme_default_price_extended_license" => 2950
         ]

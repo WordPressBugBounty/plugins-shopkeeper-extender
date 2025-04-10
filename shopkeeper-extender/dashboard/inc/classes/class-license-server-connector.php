@@ -259,7 +259,7 @@ class GBT_License_Server_Connector
 		// Use WordPress HTTP API for the request
 		$response = wp_remote_post($this->server_api_url, [
 			'body' => $post_data,
-			'timeout' => 30,
+			'timeout' => 10,
 			'sslverify' => !$this->is_development_environment(),
 			'headers' => [
 				'X-Requested-With' => 'XMLHttpRequest',
