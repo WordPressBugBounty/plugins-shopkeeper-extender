@@ -869,7 +869,7 @@ class GBT_License_Manager
 				'license_key' => $license_key,
 				'theme_slug' => $theme_slug
 			],
-			'timeout' => 10,
+			'timeout' => 30,
 			'sslverify' => !$this->is_development_environment(),
 			'headers' => [
 				'X-Requested-With' => 'XMLHttpRequest'
@@ -881,10 +881,9 @@ class GBT_License_Manager
 
 		// Handle response errors
 		if (is_wp_error($response)) {
-			$server_ip = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : (isset($_SERVER['LOCAL_ADDR']) ? $_SERVER['LOCAL_ADDR'] : 'unknown');
 			return [
 				'success' => false,
-				'message' => 'Failed to connect to the license verification service. Please check your internet connection and try again. Request from IP: ' . esc_html($server_ip) . '. <a href="' . esc_url(admin_url('admin.php?page=getbowtied-help')) . '" target="_self" class="text-wp-blue hover:text-wp-blue/90">Need help?</a>'
+				'message' => 'Failed to connect to the license verification service. Please check your internet connection and try again. <a href="' . esc_url(admin_url('admin.php?page=getbowtied-help')) . '" target="_self" class="text-wp-blue hover:text-wp-blue/90">Need help?</a>'
 			];
 		}
 

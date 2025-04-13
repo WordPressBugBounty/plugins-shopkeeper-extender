@@ -2,6 +2,9 @@
 
 defined('ABSPATH') || exit;
 
+// Include WordPress plugin API
+require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
 class Elementor_Gbt_Third_Party_Plugin
 {
 

@@ -483,17 +483,17 @@ if (!function_exists('getbowtied_license_content')) {
 													<div class="mt-2">
 														<p class="text-sm text-gray-500 mb-2">Follow these steps to locate your purchase code:</p>
 														<ol class="text-sm text-gray-600 list-decimal ml-5 mt-2 space-y-2">
-															<li>Go to <a href="<?php echo esc_url($gbt_dashboard_setup->get_theme_config('theme_customer_support_url')); ?>" target="_blank" class="text-wp-blue hover:underline">theme support page</a> on your Envato account</li>
-															<li>Navigate to the <strong>Purchase codes</strong> at the bottom of the page</li>
-															<li>Select the purchase code</li>
-															<li>Copy the purchase code and paste it in the <strong>Purchase Code</strong> field below</li>
+															<li>Go to <a href="<?php echo esc_url($gbt_dashboard_setup->get_theme_config('theme_backend_download_url')); ?>" target="_blank" class="text-wp-blue hover:underline">downloads</a> on your Envato account</li>
+															<li>Click the "Download" button next to <?php echo esc_html($theme_name_gbt_dash); ?> theme</li>
+															<li>Select "License certificate & purchase code" from the dropdown</li>
+															<li>Open the downloaded file and copy the <strong>Item Purchase Code</strong></li>
 														</ol>
 													</div>
 												</div>
 											</div>
 											<div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
 												<button type="button" id="close-license-help" class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 hover:ring-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 sm:mt-0 sm:w-auto transition duration-150 ease-in-out cursor-pointer">Close</button>
-												<a href="<?php echo esc_url($gbt_dashboard_setup->get_theme_config('theme_customer_support_url')); ?>" target="_blank" class="mt-3 inline-flex w-full justify-center rounded-md bg-wp-blue px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-wp-blue/90 sm:mt-0 sm:w-auto sm:mr-3 transition duration-150 ease-in-out cursor-pointer">Get Your Purchase Code</a>
+												<a href="<?php echo esc_url($gbt_dashboard_setup->get_theme_config('theme_backend_download_url')); ?>" target="_blank" class="mt-3 inline-flex w-full justify-center rounded-md bg-wp-blue px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-wp-blue/90 sm:mt-0 sm:w-auto sm:mr-3 transition duration-150 ease-in-out cursor-pointer">Get Your Purchase Code</a>
 											</div>
 										</div>
 									</div>

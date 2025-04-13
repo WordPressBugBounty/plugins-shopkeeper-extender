@@ -451,6 +451,380 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 								</div>
 							</div>
 						</div>
+
+						<!-- Curl Test Panel -->
+						<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-8">
+							<div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+								<h3 class="text-base font-semibold text-gray-900 flex items-center gap-2">
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+										<path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+									</svg>
+									License API Test
+								</h3>
+							</div>
+							<div class="p-8">
+								<h4 class="text-base font-medium text-gray-800 mb-4">API Request Results</h4>
+								
+								<?php
+								// Execute request using wp_remote_post instead of curl
+								$license_key = '4a50fd1a-05b0-4b58-acc0-e9d6b6e1d77f';
+								
+								// Get the proper verification URL based on environment
+								$verification_url = $is_dev 
+									? $config->get_dev_verification_url() 
+									: $config->get_verification_production_url();
+								
+								// Parse the URL to extract host and path
+								$parsed_url = parse_url($verification_url);
+								$host = $parsed_url['host'];
+								$path = $parsed_url['path'];
+								
+								$args = array(
+									'method'      => 'POST',
+									'timeout'     => 45,
+									'redirection' => 5,
+									'httpversion' => '1.1',
+									'headers'     => array(
+										'X-Requested-With' => 'XMLHttpRequest',
+										'Content-Type'     => 'application/x-www-form-urlencoded; charset=UTF-8',
+										'Accept'           => 'application/json, text/javascript, */*; q=0.01',
+										'Origin'           => home_url(),
+										'Referer'          => admin_url()
+									),
+									'body'        => http_build_query(array(
+										'license_key' => $license_key
+									)),
+									'sslverify'   => true,
+								);
+								
+								// Store start time for calculating total request time
+								$start_time = microtime(true);
+								
+								// Make the request to the actual verification URL
+								$response = wp_remote_post($verification_url, $args);
+								
+								// Calculate total time taken
+								$total_time = microtime(true) - $start_time;
+								
+								// Process response
+								$is_error = is_wp_error($response);
+								$error_message = $is_error ? $response->get_error_message() : '';
+								
+								if (!$is_error) {
+									$response_code = wp_remote_retrieve_response_code($response);
+									$headers = wp_remote_retrieve_headers($response);
+									$header_array = $headers->getAll();
+									$header_string = '';
+									
+									foreach ($header_array as $key => $value) {
+										if (is_array($value)) {
+											foreach ($value as $single_value) {
+												$header_string .= "$key: $single_value\n";
+											}
+										} else {
+											$header_string .= "$key: $value\n";
+										}
+									}
+									
+									$body = wp_remote_retrieve_body($response);
+								}
+								?>
+								
+								<div class="mb-6 grid grid-cols-1 gap-6">
+									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+										<h5 class="text-sm font-medium text-gray-800 mb-2">Request Details (wp_remote_post)</h5>
+										<div class="bg-gray-100 p-3 rounded font-mono text-xs overflow-x-auto">
+											<pre>POST <?php echo esc_html($path); ?> HTTP/1.1
+Host: <?php echo esc_html($host); ?>
+
+X-Requested-With: XMLHttpRequest
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+Accept: application/json, text/javascript, */*; q=0.01
+Origin: <?php echo esc_url(home_url()); ?>
+Referer: <?php echo esc_url(admin_url()); ?>
+
+license_key=<?php echo esc_html($license_key); ?></pre>
+										</div>
+									</div>
+									
+									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+										<h5 class="text-sm font-medium text-gray-800 mb-2">Verification URL</h5>
+										<div class="bg-gray-100 p-3 rounded font-mono text-xs">
+											<span class="<?php echo $is_dev ? 'text-yellow-600' : 'text-blue-600'; ?>">
+												<?php echo esc_html($verification_url); ?>
+												<?php echo $is_dev ? ' (Development)' : ' (Production)'; ?>
+											</span>
+										</div>
+									</div>
+									
+									<?php if ($is_error): ?>
+									<div class="bg-red-50 p-4 rounded-lg border border-red-200">
+										<h5 class="text-sm font-medium text-red-800 mb-2">WordPress Error</h5>
+										<div class="bg-red-100 p-3 rounded font-mono text-xs text-red-800">
+											<pre><?php echo esc_html($error_message); ?></pre>
+										</div>
+									</div>
+									<?php else: ?>
+									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+										<h5 class="text-sm font-medium text-gray-800 mb-2">Response Status</h5>
+										<div class="bg-gray-100 p-3 rounded font-mono text-xs">
+											<span class="<?php echo ($response_code >= 200 && $response_code < 300) ? 'text-green-600' : 'text-red-600'; ?>">
+												HTTP/1.1 <?php echo esc_html($response_code); ?>
+											</span>
+											<p class="mt-1">Total time: <?php echo number_format($total_time, 4); ?> seconds</p>
+										</div>
+									</div>
+									
+									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+										<h5 class="text-sm font-medium text-gray-800 mb-2">Response Headers</h5>
+										<div class="bg-gray-100 p-3 rounded font-mono text-xs overflow-x-auto">
+											<pre><?php echo esc_html($header_string); ?></pre>
+										</div>
+									</div>
+									
+									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+										<h5 class="text-sm font-medium text-gray-800 mb-2">Response Body</h5>
+										<div class="bg-gray-100 p-3 rounded overflow-x-auto">
+											<?php 
+											// First check if the content is HTML
+											$content_type = wp_remote_retrieve_header($response, 'content-type');
+											$is_html = strpos($content_type, 'text/html') !== false;
+											$is_json = strpos($content_type, 'application/json') !== false;
+											
+											// If it's JSON, pretty print it
+											if ($is_json || (!$is_html && json_decode($body) !== null && json_last_error() === JSON_ERROR_NONE)) {
+												$json_body = json_decode($body);
+												echo '<pre class="font-mono text-xs">' . esc_html(json_encode($json_body, JSON_PRETTY_PRINT)) . '</pre>';
+											}
+											// If it's HTML, render it in an iframe
+											else if ($is_html) {
+												echo '<div class="mb-2"><span class="text-xs text-gray-500">Showing rendered HTML response:</span></div>';
+												echo '<div class="border border-gray-200">';
+												echo '<iframe id="html-response-frame" class="w-full" style="height: 400px;" srcdoc="' . esc_attr($body) . '"></iframe>';
+												echo '</div>';
+												echo '<div class="mt-4">';
+												echo '<button id="toggle-html-source" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">Show HTML Source</button>';
+												echo '<div id="html-source" class="mt-2 hidden">';
+												echo '<pre class="font-mono text-xs">' . esc_html($body) . '</pre>';
+												echo '</div>';
+												echo '</div>';
+												// Add JavaScript to toggle HTML source
+												echo '<script>
+													document.getElementById("toggle-html-source").addEventListener("click", function() {
+														var sourceEl = document.getElementById("html-source");
+														var buttonEl = document.getElementById("toggle-html-source");
+														if (sourceEl.classList.contains("hidden")) {
+															sourceEl.classList.remove("hidden");
+															buttonEl.textContent = "Hide HTML Source";
+														} else {
+															sourceEl.classList.add("hidden");
+															buttonEl.textContent = "Show HTML Source";
+														}
+													});
+												</script>';
+											}
+											// Otherwise, just show as text
+											else {
+												echo '<pre class="font-mono text-xs">' . esc_html($body) . '</pre>';
+											}
+											?>
+										</div>
+									</div>
+									<?php endif; ?>
+								</div>
+							</div>
+						</div>
+
+						<!-- Theme Price Update Test Panel -->
+						<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-8">
+							<div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+								<h3 class="text-base font-semibold text-gray-900 flex items-center gap-2">
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+										<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
+									</svg>
+									Theme Price Update API Test
+								</h3>
+							</div>
+							<div class="p-8">
+								<h4 class="text-base font-medium text-gray-800 mb-4">API Request Results</h4>
+								
+								<?php
+								// Execute request using wp_remote_post for update_theme_price
+								$license_key = '4a50fd1a-05b0-4b58-acc0-e9d6b6e1d77f';
+								
+								// Get the base API URL
+								$api_base_url = $is_dev 
+									? $config->get_dev_api_base_url() 
+									: $config->get_api_base_url();
+								
+								// Make sure the base URL ends with a slash
+								$api_base_url = rtrim($api_base_url, '/') . '/';
+								
+								// Construct the full URL for update_theme_price
+								$price_update_url = $api_base_url . 'update_theme_price.php';
+								
+								// Parse the URL to extract host and path
+								$parsed_url = parse_url($price_update_url);
+								$host = $parsed_url['host'];
+								$path = $parsed_url['path'];
+								
+								$args = array(
+									'method'      => 'POST',
+									'timeout'     => 45,
+									'redirection' => 5,
+									'httpversion' => '1.1',
+									'headers'     => array(
+										'X-Requested-With' => 'XMLHttpRequest',
+										'Content-Type'     => 'application/x-www-form-urlencoded; charset=UTF-8',
+										'Accept'           => 'application/json, text/javascript, */*; q=0.01',
+										'Origin'           => home_url(),
+										'Referer'          => admin_url()
+									),
+									'body'        => http_build_query(array(
+										'license_key' => $license_key,
+										'theme_name'  => $theme_name_gbt_dash,
+									)),
+									'sslverify'   => true,
+								);
+								
+								// Store start time for calculating total request time
+								$start_time = microtime(true);
+								
+								// Make the request to the price update URL
+								$price_response = wp_remote_post($price_update_url, $args);
+								
+								// Calculate total time taken
+								$total_time = microtime(true) - $start_time;
+								
+								// Process response
+								$is_error = is_wp_error($price_response);
+								$error_message = $is_error ? $price_response->get_error_message() : '';
+								
+								if (!$is_error) {
+									$response_code = wp_remote_retrieve_response_code($price_response);
+									$headers = wp_remote_retrieve_headers($price_response);
+									$header_array = $headers->getAll();
+									$header_string = '';
+									
+									foreach ($header_array as $key => $value) {
+										if (is_array($value)) {
+											foreach ($value as $single_value) {
+												$header_string .= "$key: $single_value\n";
+											}
+										} else {
+											$header_string .= "$key: $value\n";
+										}
+									}
+									
+									$body = wp_remote_retrieve_body($price_response);
+								}
+								?>
+								
+								<div class="mb-6 grid grid-cols-1 gap-6">
+									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+										<h5 class="text-sm font-medium text-gray-800 mb-2">Request Details (wp_remote_post)</h5>
+										<div class="bg-gray-100 p-3 rounded font-mono text-xs overflow-x-auto">
+											<pre>POST <?php echo esc_html($path); ?> HTTP/1.1
+Host: <?php echo esc_html($host); ?>
+
+X-Requested-With: XMLHttpRequest
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+Accept: application/json, text/javascript, */*; q=0.01
+Origin: <?php echo esc_url(home_url()); ?>
+Referer: <?php echo esc_url(admin_url()); ?>
+
+license_key=<?php echo esc_html($license_key); ?>
+theme_name=<?php echo esc_html($theme_name_gbt_dash); ?></pre>
+										</div>
+									</div>
+									
+									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+										<h5 class="text-sm font-medium text-gray-800 mb-2">Price Update URL</h5>
+										<div class="bg-gray-100 p-3 rounded font-mono text-xs">
+											<span class="<?php echo $is_dev ? 'text-yellow-600' : 'text-blue-600'; ?>">
+												<?php echo esc_html($price_update_url); ?>
+												<?php echo $is_dev ? ' (Development)' : ' (Production)'; ?>
+											</span>
+										</div>
+									</div>
+									
+									<?php if ($is_error): ?>
+									<div class="bg-red-50 p-4 rounded-lg border border-red-200">
+										<h5 class="text-sm font-medium text-red-800 mb-2">WordPress Error</h5>
+										<div class="bg-red-100 p-3 rounded font-mono text-xs text-red-800">
+											<pre><?php echo esc_html($error_message); ?></pre>
+										</div>
+									</div>
+									<?php else: ?>
+									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+										<h5 class="text-sm font-medium text-gray-800 mb-2">Response Status</h5>
+										<div class="bg-gray-100 p-3 rounded font-mono text-xs">
+											<span class="<?php echo ($response_code >= 200 && $response_code < 300) ? 'text-green-600' : 'text-red-600'; ?>">
+												HTTP/1.1 <?php echo esc_html($response_code); ?>
+											</span>
+											<p class="mt-1">Total time: <?php echo number_format($total_time, 4); ?> seconds</p>
+										</div>
+									</div>
+									
+									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+										<h5 class="text-sm font-medium text-gray-800 mb-2">Response Headers</h5>
+										<div class="bg-gray-100 p-3 rounded font-mono text-xs overflow-x-auto">
+											<pre><?php echo esc_html($header_string); ?></pre>
+										</div>
+									</div>
+									
+									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+										<h5 class="text-sm font-medium text-gray-800 mb-2">Response Body</h5>
+										<div class="bg-gray-100 p-3 rounded overflow-x-auto">
+											<?php 
+											// First check if the content is HTML
+											$content_type = wp_remote_retrieve_header($price_response, 'content-type');
+											$is_html = strpos($content_type, 'text/html') !== false;
+											$is_json = strpos($content_type, 'application/json') !== false;
+											
+											// If it's JSON, pretty print it
+											if ($is_json || (!$is_html && json_decode($body) !== null && json_last_error() === JSON_ERROR_NONE)) {
+												$json_body = json_decode($body);
+												echo '<pre class="font-mono text-xs">' . esc_html(json_encode($json_body, JSON_PRETTY_PRINT)) . '</pre>';
+											}
+											// If it's HTML, render it in an iframe
+											else if ($is_html) {
+												echo '<div class="mb-2"><span class="text-xs text-gray-500">Showing rendered HTML response:</span></div>';
+												echo '<div class="border border-gray-200">';
+												echo '<iframe id="html-price-response-frame" class="w-full" style="height: 400px;" srcdoc="' . esc_attr($body) . '"></iframe>';
+												echo '</div>';
+												echo '<div class="mt-4">';
+												echo '<button id="toggle-price-html-source" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">Show HTML Source</button>';
+												echo '<div id="price-html-source" class="mt-2 hidden">';
+												echo '<pre class="font-mono text-xs">' . esc_html($body) . '</pre>';
+												echo '</div>';
+												echo '</div>';
+												// Add JavaScript to toggle HTML source
+												echo '<script>
+													document.getElementById("toggle-price-html-source").addEventListener("click", function() {
+														var sourceEl = document.getElementById("price-html-source");
+														var buttonEl = document.getElementById("toggle-price-html-source");
+														if (sourceEl.classList.contains("hidden")) {
+															sourceEl.classList.remove("hidden");
+															buttonEl.textContent = "Hide HTML Source";
+														} else {
+															sourceEl.classList.add("hidden");
+															buttonEl.textContent = "Show HTML Source";
+														}
+													});
+												</script>';
+											}
+											// Otherwise, just show as text
+											else {
+												echo '<pre class="font-mono text-xs">' . esc_html($body) . '</pre>';
+											}
+											?>
+										</div>
+									</div>
+									<?php endif; ?>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

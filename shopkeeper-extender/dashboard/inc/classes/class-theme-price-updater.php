@@ -181,7 +181,7 @@ class GBT_Theme_Price_Updater
 	{
 		// Send the request
 		$response = wp_remote_post($this->server_api_url, [
-			'timeout' => 10,
+			'timeout' => 30,
 			'body' => $post_data
 		]);
 		
