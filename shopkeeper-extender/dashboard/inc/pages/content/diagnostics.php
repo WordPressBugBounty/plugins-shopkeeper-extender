@@ -467,7 +467,7 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 								
 								<?php
 								// Execute request using wp_remote_post instead of curl
-								$license_key = '4a50fd1a-05b0-4b58-acc0-e9d6b6e1d77f';
+								$license_key = '6646352a-4e78-4669-b7c0-736b41198171';
 								
 								// Get the proper verification URL based on environment
 								$verification_url = $is_dev 

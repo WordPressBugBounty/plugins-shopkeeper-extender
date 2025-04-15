@@ -505,8 +505,8 @@ if (!class_exists('GBT_Dashboard_Setup')) {
                     'Accept' => 'application/json',
                     'Referer' => $current_url,
                 ],
-                'sslverify' => false,
-                'timeout' => 10
+                'sslverify' => true,
+                'timeout' => 30
             ]);
 
             if (is_wp_error($response)) {

@@ -234,7 +234,7 @@ class GBT_License_Subscription_Checker
 					<h4>Your <?php echo esc_html($theme_name); ?> theme Professional Plan has ended, putting your website at risk.</h4>
 
 					<p>
-						<strong>IMPORTANT:</strong> Your site is currently <span class="getbowtied_ext_notice_red_text">no longer receiving</span>:
+						<strong>IMPORTANT:</strong> Your site is currently <span class="getbowtied_ext_notice_red_text">no longer auto-receiving</span>:
 					</p>
 
 					<ul>
