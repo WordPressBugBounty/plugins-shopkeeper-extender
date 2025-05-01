@@ -405,9 +405,16 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 											</tr>
 											<tr class="border-b border-gray-100">
 												<td class="py-3 px-4 font-medium text-gray-700">API Base URL</td>
-												<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($config->get_api_base_url()); ?></td>
+												<td class="py-3 px-4 text-gray-600 font-mono text-sm">
+													Primary: <?php echo esc_html($config->get_primary_api_url()); ?><br>
+													Backup: <?php echo esc_html($config->get_backup_api_url()); ?>
+												</td>
 												<td class="py-3 px-4 text-gray-600 font-mono text-sm <?php echo $is_dev ? 'text-yellow-600' : ''; ?>">
-													<?php echo $is_dev ? esc_html($config->get_dev_api_base_url()) : esc_html($config->get_api_base_url()); ?>
+													<?php if ($is_dev): ?>
+														<?php echo esc_html($config->get_dev_api_base_url()); ?>
+													<?php else: ?>
+														<?php echo esc_html($config->get_api_base_url()); ?>
+													<?php endif; ?>
 												</td>
 											</tr>
 											<tr class="border-b border-gray-100">
@@ -444,11 +451,20 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 													<p>Development mode is enabled (WP_GBT_DEV_ENV = true). Using local development endpoints for all API calls.</p>
 												<?php else: ?>
 													<p>Production mode is enabled (WP_GBT_DEV_ENV = false). Using live API endpoints for all requests.</p>
+													<p class="mt-1">API requests will first try the primary URL (<?php echo esc_html($config->get_primary_api_url()); ?>). If unreachable, requests will automatically use the backup URL (<?php echo esc_html($config->get_backup_api_url()); ?>).</p>
 												<?php endif; ?>
 											</div>
 										</div>
 									</div>
 								</div>
+								
+								<?php if (!$is_dev): ?>
+								<div class="mt-4 flex items-center justify-between">
+									<div class="text-sm text-gray-600">
+										<p>The system performs a live connection check on each API request without storing test results.</p>
+									</div>
+								</div>
+								<?php endif; ?>
 							</div>
 						</div>
 
