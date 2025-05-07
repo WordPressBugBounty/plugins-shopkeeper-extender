@@ -1,19 +1,19 @@
 {
 	"name": "Shopkeeper Extender",
-	"version": "5.5",
-	"download_url": "https://downloads.wordpress.org/plugin/shopkeeper-extender.5.5.zip",
+	"version": "5.6",
+	"download_url": "https://downloads.wordpress.org/plugin/shopkeeper-extender.5.6.zip",
 
 	"homepage": "https://wordpress.org/plugins/shopkeeper-extender/",
 	"requires": "6.0",
 	"tested": "6.7.2",
-	"last_updated": "2025-05-01 12:00:00",
+	"last_updated": "2025-05-07 12:00:00",
 
 	"author": "Get Bowtied",
 	"author_homepage": "https://getbowtied.com/",
 
 	"sections": {
 		"description": "<p>Companion plugin for the <b>Shopkeeper</b> theme. Extends the functionality by adding theme specific features.</p><h4>Features:</h4><ul><li>Adds 'Social Media' section in Customizer for easy management of links to social media profiles</li><li>Adds header image option for WooCommerce product categories</li><li>Adds 'Additional JS' section in Customizer allowing for site customization with custom JavaScript code</li><li>Adds social sharing buttons for WooCommerce products</li><li>Adds 'Background URL' field for menu items</li></ul><h4>Gutenberg Blocks:</h4><ul><li>Image Slider</li><li>Banner</li><li>Posts Grid</li><li>Product Categories Grid</li><li>Social Media Profiles</li></ul><h4>Widgets:</h4><ul><li>Social Media Profiles</li></ul><h4>WPBakery Page Builder Elements:</h4><ul><li>Slider</li><li>Banner</li><li>Posts Slider</li><li>Product Categories Grid</li><li>Social Media Profiles</li></ul>",
-		"changelog": "<h4>5.4</h4><ul><li>Update Compatibility with WordPress 6.8.1 / WooCommerce 9.8.3</li></ul>"
+		"changelog": "<h4>5.6</h4><ul><li>Update Compatibility with WooCommerce 9.8.4</li></ul>"
 	},
 
 	"icons" : {

@@ -28,12 +28,13 @@ if (!function_exists('getbowtied_dashboard_pages_styles_and_scripts')) {
 			$our_pages[] = 'getbowtied-license';      // License page
 		}
 
-		add_filter('screen_options_show_screen', '__return_false');
-
 		// Only load our assets on our pages
 		if (!in_array($_GET['page'], $our_pages)) {
 			return;
 		}
+
+		// Apply screen options filter only on our custom pages
+		add_filter('screen_options_show_screen', '__return_false');
 
 		// Get base paths and theme version
 		$base_paths = $gbt_dashboard_setup->get_base_paths();

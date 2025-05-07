@@ -92,64 +92,13 @@ class GBT_License_Config
 	}
 
 	/**
-	 * Get the primary API URL
-	 * 
-	 * @return string The primary API URL
-	 */
-	public function get_primary_api_url(): string
-	{
-		return 'https://my.getbowtied.net/v1';
-	}
-	
-	/**
-	 * Get the backup API URL
-	 * 
-	 * @return string The backup API URL
-	 */
-	public function get_backup_api_url(): string
-	{
-		return 'https://my.getbowtied.com/v1';
-	}
-
-	/**
 	 * Get the API base URL for production
 	 * 
 	 * @return string The base URL for API endpoints
 	 */
 	public function get_api_base_url(): string
 	{
-		// Get the primary and backup URLs
-		$primary_api_url = $this->get_primary_api_url();
-		$backup_api_url = $this->get_backup_api_url();
-		
-		// Always try the primary URL first
-		$test_url = $primary_api_url . '/verify_license.php';
-		
-		// Test the primary URL
-		$response = wp_remote_get($test_url, [
-			'timeout' => 3, // Short timeout to fail quickly
-			'sslverify' => true,
-			'headers' => [
-				'Connection' => 'close',
-				'Cache-Control' => 'no-cache'
-			],
-		]);
-		
-		// Check if the connection was successful
-		if (!is_wp_error($response)) {
-			$response_code = wp_remote_retrieve_response_code($response);
-			
-			// Any HTTP response code (even 404) means the server is reachable
-			// Only consider it a failure if the response code is 0 or a server error (500-599)
-			$is_server_error = $response_code >= 500 && $response_code < 600;
-			
-			if ($response_code > 0 && !$is_server_error) {
-				return $primary_api_url;
-			}
-		}
-		
-		// Primary URL failed, use backup URL
-		return $backup_api_url;
+		return 'https://my.getbowtied.com/v1';
 	}
 
 	/**
