@@ -146,8 +146,8 @@ class GBT_License_Server_Connector
 		// Get the site domain
 		$domain = $this->get_site_domain();
 
-		// Get the admin email
-		$admin_email = get_option('admin_email');
+		// Get the admin email with fallback
+		$admin_email = $this->get_admin_email();
 
 		// Get theme information from the dashboard setup
 		$gbt_dashboard_setup = GBT_Dashboard_Setup::init();
@@ -226,8 +226,8 @@ class GBT_License_Server_Connector
 		// Get the site domain
 		$domain = $this->get_site_domain();
 
-		// Get the admin email
-		$admin_email = get_option('admin_email');
+		// Get the admin email with fallback
+		$admin_email = $this->get_admin_email();
 
 		// Get theme information from the dashboard setup
 		$gbt_dashboard_setup = GBT_Dashboard_Setup::init();
@@ -252,12 +252,20 @@ class GBT_License_Server_Connector
 	 */
 	private function send_api_request(array $post_data)
 	{
+		// Get URLs from config
+		if ($this->is_development_environment()) {
+			$config = GBT_License_Config::get_instance();
+			$urls = [$config->get_dev_license_server_url()];
+		} else {
+			$config = GBT_License_Config::get_instance();
+			$urls = $config->get_license_server_urls();
+		}
+
 		// Log the request data
-		$this->log_debug('Sending request to: ' . $this->server_api_url);
+		$this->log_debug('Trying license server URLs: ' . implode(', ', $urls));
 		$this->log_debug('Request data: ' . json_encode($post_data));
 
-		// Use WordPress HTTP API for the request
-		$response = wp_remote_post($this->server_api_url, [
+		$request_args = [
 			'body' => $post_data,
 			'timeout' => 30,
 			'sslverify' => !$this->is_development_environment(),
@@ -266,11 +274,14 @@ class GBT_License_Server_Connector
 				'Referer' => home_url(),
 				'User-Agent' => 'WordPress/' . get_bloginfo('version')
 			]
-		]);
+		];
+
+		// Try URLs in order until one returns valid JSON
+		$response = $this->try_license_urls_with_fallback($urls, $request_args);
 
 		// Check for errors
 		if (is_wp_error($response)) {
-			$this->log_error('API request failed: ' . $response->get_error_message());
+			$this->log_error('All license server URLs failed: ' . $response->get_error_message());
 			return false;
 		}
 
@@ -282,6 +293,37 @@ class GBT_License_Server_Connector
 
 		// Parse the JSON response
 		return $this->parse_api_response($response_body);
+	}
+
+	/**
+	 * Try multiple license server URLs with fallback until one returns valid JSON
+	 * 
+	 * @param array $urls Array of URLs to try
+	 * @param array $request_args WordPress HTTP request arguments
+	 * @return mixed WordPress HTTP response or WP_Error
+	 */
+	private function try_license_urls_with_fallback(array $urls, array $request_args)
+	{
+		foreach ($urls as $url) {
+			$this->log_debug('Trying URL: ' . $url);
+			$response = wp_remote_post($url, $request_args);
+			
+			// If request succeeded and returned valid JSON, use this response
+			if (!is_wp_error($response)) {
+				$response_body = wp_remote_retrieve_body($response);
+				$data = json_decode($response_body, true);
+				if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
+					$this->log_debug('URL succeeded: ' . $url);
+					return $response;
+				}
+				$this->log_debug('URL returned invalid JSON: ' . $url);
+			} else {
+				$this->log_debug('URL failed: ' . $url . ' - ' . $response->get_error_message());
+			}
+		}
+
+		// If all URLs failed, return the last response
+		return $response;
 	}
 
 	/**
@@ -301,6 +343,31 @@ class GBT_License_Server_Connector
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Get the admin email with fallback if empty
+	 * 
+	 * @return string The admin email
+	 */
+	private function get_admin_email(): string
+	{
+		$admin_email = get_option('admin_email');
+		
+		// If admin email is empty, try fallback methods
+		if (empty($admin_email)) {
+			// Try to get current user email if available
+			$current_user = wp_get_current_user();
+			if ($current_user && !empty($current_user->user_email)) {
+				$admin_email = $current_user->user_email;
+			} else {
+				// Final fallback - create a placeholder email based on domain
+				$domain = $this->get_site_domain();
+				$admin_email = 'admin@' . $domain;
+			}
+		}
+		
+		return $admin_email;
 	}
 
 	/**

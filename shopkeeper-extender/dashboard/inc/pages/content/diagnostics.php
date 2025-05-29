@@ -405,9 +405,9 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 											</tr>
 											<tr class="border-b border-gray-100">
 												<td class="py-3 px-4 font-medium text-gray-700">API Base URL</td>
-												<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($config->get_api_base_url()); ?></td>
+												<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php $base_urls = $config->get_api_base_urls(); echo esc_html($base_urls[0]); ?></td>
 												<td class="py-3 px-4 text-gray-600 font-mono text-sm <?php echo $is_dev ? 'text-yellow-600' : ''; ?>">
-													<?php echo $is_dev ? esc_html($config->get_dev_api_base_url()) : esc_html($config->get_api_base_url()); ?>
+													<?php echo $is_dev ? esc_html($config->get_dev_api_base_url()) : esc_html($base_urls[0]); ?>
 												</td>
 											</tr>
 											<tr class="border-b border-gray-100">
@@ -463,174 +463,347 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 								</h3>
 							</div>
 							<div class="p-8">
-								<h4 class="text-base font-medium text-gray-800 mb-4">API Request Results</h4>
+								<h4 class="text-base font-medium text-gray-800 mb-4">API URL Fallback Test</h4>
 								
 								<?php
-								// Execute request using wp_remote_post instead of curl
+								// Execute request using the same logic as the license manager
 								$license_key = '6646352a-4e78-4669-b7c0-736b41198171';
 								
-								// Get the proper verification URL based on environment
-								$verification_url = $is_dev 
-									? $config->get_dev_verification_url() 
-									: $config->get_verification_production_url();
+								// Get all URLs to test (primary + fallback)
+								if ($is_dev) {
+									$urls_to_test = [$config->get_dev_verification_url()];
+									$environment = 'Development';
+								} else {
+									$urls_to_test = $config->get_verification_urls();
+									$environment = 'Production';
+								}
 								
-								// Parse the URL to extract host and path
-								$parsed_url = parse_url($verification_url);
-								$host = $parsed_url['host'];
-								$path = $parsed_url['path'];
-								
-								$args = array(
-									'method'      => 'POST',
-									'timeout'     => 45,
-									'redirection' => 5,
-									'httpversion' => '1.1',
-									'headers'     => array(
-										'X-Requested-With' => 'XMLHttpRequest',
-										'Content-Type'     => 'application/x-www-form-urlencoded; charset=UTF-8',
-										'Accept'           => 'application/json, text/javascript, */*; q=0.01',
-										'Origin'           => home_url(),
-										'Referer'          => admin_url()
-									),
-									'body'        => http_build_query(array(
+								$request_args = [
+									'body' => [
 										'license_key' => $license_key
-									)),
-									'sslverify'   => true,
-								);
+									],
+									'timeout' => 30,
+									'headers' => [
+										'X-Requested-With' => 'XMLHttpRequest',
+										'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+										'Accept' => 'application/json, text/javascript, */*; q=0.01',
+										'Origin' => home_url(),
+										'Referer' => admin_url()
+									],
+									'sslverify' => true,
+								];
 								
-								// Store start time for calculating total request time
-								$start_time = microtime(true);
+								$total_start_time = microtime(true);
+								$url_results = [];
+								$successful_url = null;
+								$first_valid_response = null;
 								
-								// Make the request to the actual verification URL
-								$response = wp_remote_post($verification_url, $args);
-								
-								// Calculate total time taken
-								$total_time = microtime(true) - $start_time;
-								
-								// Process response
-								$is_error = is_wp_error($response);
-								$error_message = $is_error ? $response->get_error_message() : '';
-								
-								if (!$is_error) {
-									$response_code = wp_remote_retrieve_response_code($response);
-									$headers = wp_remote_retrieve_headers($response);
-									$header_array = $headers->getAll();
-									$header_string = '';
+								// Test each URL and show the fallback logic
+								foreach ($urls_to_test as $index => $url) {
+									$url_start_time = microtime(true);
+									$response = wp_remote_post($url, $request_args);
+									$url_time = microtime(true) - $url_start_time;
 									
-									foreach ($header_array as $key => $value) {
-										if (is_array($value)) {
-											foreach ($value as $single_value) {
-												$header_string .= "$key: $single_value\n";
+									$result = [
+										'url' => $url,
+										'index' => $index + 1,
+										'time' => $url_time,
+										'is_error' => is_wp_error($response),
+										'error_message' => is_wp_error($response) ? $response->get_error_message() : null,
+										'response_code' => is_wp_error($response) ? null : wp_remote_retrieve_response_code($response),
+										'body' => is_wp_error($response) ? null : wp_remote_retrieve_body($response),
+										'is_valid_json' => false,
+										'json_data' => null,
+										'used_by_system' => false
+									];
+									
+									// Check if response is valid JSON
+									if (!$result['is_error'] && !empty($result['body'])) {
+										$json_data = json_decode($result['body'], true);
+										if (json_last_error() === JSON_ERROR_NONE && is_array($json_data)) {
+											$result['is_valid_json'] = true;
+											$result['json_data'] = $json_data;
+											
+											// This would be the URL the system uses (first successful one)
+											if ($successful_url === null) {
+												$successful_url = $url;
+												$first_valid_response = $result;
+												$result['used_by_system'] = true;
 											}
-										} else {
-											$header_string .= "$key: $value\n";
 										}
 									}
 									
-									$body = wp_remote_retrieve_body($response);
+									$url_results[] = $result;
+									
+									// In real system, we would stop here if we got valid JSON
+									// But for diagnostics, we test all URLs to show the full picture
+								}
+								
+								$total_time = microtime(true) - $total_start_time;
+								?>
+								
+								<div class="mb-6">
+									<div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+										<h5 class="text-sm font-medium text-blue-800 mb-2">Environment & Fallback Logic</h5>
+										<div class="text-sm text-blue-700">
+											<p><strong>Environment:</strong> <?php echo esc_html($environment); ?></p>
+											<p><strong>URLs to test:</strong> <?php echo count($urls_to_test); ?></p>
+											<p><strong>Logic:</strong> Try each URL in order until one returns valid JSON, then stop.</p>
+											<?php if ($successful_url): ?>
+											<p class="mt-2"><strong>✅ System would use:</strong> <code><?php echo esc_html($successful_url); ?></code></p>
+											<?php else: ?>
+											<p class="mt-2"><strong>❌ All URLs failed</strong> - System would show error message</p>
+											<?php endif; ?>
+										</div>
+									</div>
+								</div>
+
+								<div class="mb-6 space-y-4">
+									<?php foreach ($url_results as $result): ?>
+									<div class="bg-gray-50 p-4 rounded-lg border <?php echo $result['used_by_system'] ? 'border-green-500 bg-green-50' : 'border-gray-200'; ?>">
+										<div class="flex items-center justify-between mb-2">
+											<h5 class="text-sm font-medium text-gray-800">
+												URL #<?php echo $result['index']; ?>
+												<?php if ($result['used_by_system']): ?>
+													<span class="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded">✅ Used by System</span>
+												<?php elseif ($result['is_valid_json']): ?>
+													<span class="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">⚠️ Valid but not used</span>
+												<?php else: ?>
+													<span class="ml-2 px-2 py-1 text-xs bg-red-100 text-red-700 rounded">❌ Failed/Invalid</span>
+												<?php endif; ?>
+											</h5>
+											<span class="text-xs text-gray-500"><?php echo number_format($result['time'], 4); ?>s</span>
+										</div>
+										
+										<div class="bg-gray-100 p-3 rounded font-mono text-xs mb-3">
+											<?php echo esc_html($result['url']); ?>
+										</div>
+										
+										<?php if ($result['is_error']): ?>
+											<div class="bg-red-100 p-3 rounded">
+												<div class="text-red-800 text-sm font-medium">WordPress Error:</div>
+												<div class="text-red-700 text-xs font-mono mt-1"><?php echo esc_html($result['error_message']); ?></div>
+											</div>
+										<?php else: ?>
+											<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+												<div class="bg-gray-100 p-3 rounded">
+													<div class="text-gray-700 text-xs font-medium mb-1">Response Code:</div>
+													<div class="text-xs font-mono <?php echo ($result['response_code'] >= 200 && $result['response_code'] < 300) ? 'text-green-600' : 'text-red-600'; ?>">
+														HTTP <?php echo esc_html($result['response_code']); ?>
+													</div>
+												</div>
+												<div class="bg-gray-100 p-3 rounded">
+													<div class="text-gray-700 text-xs font-medium mb-1">JSON Valid:</div>
+													<div class="text-xs font-mono <?php echo $result['is_valid_json'] ? 'text-green-600' : 'text-red-600'; ?>">
+														<?php echo $result['is_valid_json'] ? '✅ Yes' : '❌ No'; ?>
+													</div>
+												</div>
+											</div>
+											
+											<?php if (!empty($result['body'])): ?>
+											<div class="mt-3 bg-gray-100 p-3 rounded">
+												<div class="text-gray-700 text-xs font-medium mb-2">Response Body:</div>
+												<div class="max-h-40 overflow-y-auto">
+													<?php if ($result['is_valid_json']): ?>
+														<pre class="text-xs"><?php echo esc_html(json_encode($result['json_data'], JSON_PRETTY_PRINT)); ?></pre>
+													<?php else: ?>
+														<pre class="text-xs"><?php echo esc_html(substr($result['body'], 0, 500)) . (strlen($result['body']) > 500 ? '...' : ''); ?></pre>
+													<?php endif; ?>
+												</div>
+											</div>
+											<?php endif; ?>
+										<?php endif; ?>
+									</div>
+									<?php endforeach; ?>
+								</div>
+								
+								<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+									<h5 class="text-sm font-medium text-gray-800 mb-2">Summary</h5>
+									<div class="text-sm text-gray-700 space-y-1">
+										<p><strong>Total test time:</strong> <?php echo number_format($total_time, 4); ?> seconds</p>
+										<p><strong>URLs tested:</strong> <?php echo count($url_results); ?></p>
+										<p><strong>Valid responses:</strong> <?php echo count(array_filter($url_results, function($r) { return $r['is_valid_json']; })); ?></p>
+										<?php if ($successful_url): ?>
+										<p><strong>System behavior:</strong> Would use first successful URL and stop testing others</p>
+										<p><strong>Actual system time:</strong> ~<?php echo number_format($first_valid_response['time'], 4); ?> seconds (only first successful URL)</p>
+										<?php else: ?>
+										<p><strong>System behavior:</strong> Would show error message to user</p>
+										<?php endif; ?>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Price & Sale Detection Panel -->
+						<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-8">
+							<div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+								<h3 class="text-base font-semibold text-gray-900 flex items-center gap-2">
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+										<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
+									</svg>
+									Price & Sale Detection Analysis
+								</h3>
+							</div>
+							<div class="p-8">
+								<?php
+								// Load Theme Price Updater if needed
+								if (!class_exists('GBT_Theme_Price_Updater')) {
+									require_once $base_paths['path'] . '/dashboard/inc/classes/class-theme-price-updater.php';
+								}
+								$price_updater = GBT_Theme_Price_Updater::get_instance();
+								
+								// Get default prices from config
+								$theme_default_price_regular_license = $gbt_dashboard_setup->get_theme_config('theme_default_price_regular_license');
+								$theme_default_price_extended_license = $gbt_dashboard_setup->get_theme_config('theme_default_price_extended_license');
+								
+								// Get current live price data
+								$price_data = $price_updater->get_current_price_data(
+									$theme_default_price_regular_license,
+									$theme_default_price_extended_license
+								);
+								
+								// Sale detection logic (same as license.php)
+								$regular_license_is_sale = false;
+								$extended_license_is_sale = false;
+								$professional_license_is_sale = false;
+								
+								if (isset($price_data['regular_license_price']) && isset($price_data['extended_license_price'])) {
+									// Compare live prices with default prices to check for sales
+									$regular_license_is_sale = $price_data['regular_license_price'] < $theme_default_price_regular_license;
+									$extended_license_is_sale = $price_data['extended_license_price'] < $theme_default_price_extended_license;
+									
+									// If regular license is on sale, professional license is also on sale
+									$professional_license_is_sale = $regular_license_is_sale;
+								}
+								
+								// Get support price formula and calculate professional price
+								$support_price_formula = $gbt_dashboard_setup->get_global_config('support_prices', 'support_price_formula');
+								$live_professional_price = is_callable($support_price_formula) ? $support_price_formula($price_data['regular_license_price']) : 0;
+								$default_professional_price = is_callable($support_price_formula) ? $support_price_formula($theme_default_price_regular_license) : 0;
+								
+								// Get last price verification time
+								$price_last_verified = $price_updater->get_last_verification_time();
+								$price_last_verified_display = 'Never';
+								if ($price_last_verified) {
+									$wp_timezone = wp_timezone();
+									$datetime = new DateTime();
+									$datetime->setTimestamp($price_last_verified);
+									$datetime->setTimezone($wp_timezone);
+									$price_last_verified_display = $datetime->format('F j, Y g:i a (T)');
 								}
 								?>
 								
-								<div class="mb-6 grid grid-cols-1 gap-6">
-									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-										<h5 class="text-sm font-medium text-gray-800 mb-2">Request Details (wp_remote_post)</h5>
-										<div class="bg-gray-100 p-3 rounded font-mono text-xs overflow-x-auto">
-											<pre>POST <?php echo esc_html($path); ?> HTTP/1.1
-Host: <?php echo esc_html($host); ?>
+								<h4 class="text-base font-medium text-gray-800 mb-4">Price Comparison & Sale Detection</h4>
+								
+								<div class="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
+									<h5 class="text-sm font-medium text-blue-800 mb-2">How Sale Detection Works</h5>
+									<div class="text-sm text-blue-700">
+										<p><strong>Logic:</strong> A sale is detected when the live API price is lower than the default config price.</p>
+										<p><strong>Formula:</strong> <code>is_sale = live_price &lt; default_price</code></p>
+										<p><strong>Last Updated:</strong> <?php echo esc_html($price_last_verified_display); ?></p>
+									</div>
+								</div>
 
-X-Requested-With: XMLHttpRequest
-Content-Type: application/x-www-form-urlencoded; charset=UTF-8
-Accept: application/json, text/javascript, */*; q=0.01
-Origin: <?php echo esc_url(home_url()); ?>
-Referer: <?php echo esc_url(admin_url()); ?>
+								<div class="overflow-x-auto">
+									<table class="w-full text-left border-collapse">
+										<thead>
+											<tr>
+												<th class="py-3 px-4 bg-gray-50 font-medium text-gray-700 border-b">License Type</th>
+												<th class="py-3 px-4 bg-gray-50 font-medium text-gray-700 border-b">Default Price</th>
+												<th class="py-3 px-4 bg-gray-50 font-medium text-gray-700 border-b">Live Price</th>
+												<th class="py-3 px-4 bg-gray-50 font-medium text-gray-700 border-b">Sale Status</th>
+												<th class="py-3 px-4 bg-gray-50 font-medium text-gray-700 border-b">Difference</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr class="border-b border-gray-100">
+												<td class="py-3 px-4 font-medium text-gray-700">Regular License</td>
+												<td class="py-3 px-4 text-gray-600 font-mono text-sm">$<?php echo number_format($theme_default_price_regular_license, 0); ?></td>
+												<td class="py-3 px-4 text-gray-600 font-mono text-sm">$<?php echo number_format($price_data['regular_license_price'], 0); ?></td>
+												<td class="py-3 px-4">
+													<?php if ($regular_license_is_sale): ?>
+														<span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded font-medium">🔥 ON SALE</span>
+													<?php else: ?>
+														<span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">No sale</span>
+													<?php endif; ?>
+												</td>
+												<td class="py-3 px-4 text-sm">
+													<?php 
+													$regular_diff = $price_data['regular_license_price'] - $theme_default_price_regular_license;
+													$regular_diff_percent = $theme_default_price_regular_license > 0 ? ($regular_diff / $theme_default_price_regular_license) * 100 : 0;
+													?>
+													<span class="<?php echo $regular_diff < 0 ? 'text-red-600' : ($regular_diff > 0 ? 'text-green-600' : 'text-gray-600'); ?>">
+														<?php echo $regular_diff > 0 ? '+' : ''; ?>$<?php echo number_format($regular_diff, 0); ?>
+														<?php if ($regular_diff != 0): ?>
+															(<?php echo $regular_diff > 0 ? '+' : ''; ?><?php echo number_format($regular_diff_percent, 1); ?>%)
+														<?php endif; ?>
+													</span>
+												</td>
+											</tr>
+											<tr class="border-b border-gray-100">
+												<td class="py-3 px-4 font-medium text-gray-700">Extended License</td>
+												<td class="py-3 px-4 text-gray-600 font-mono text-sm">$<?php echo number_format($theme_default_price_extended_license, 0); ?></td>
+												<td class="py-3 px-4 text-gray-600 font-mono text-sm">$<?php echo number_format($price_data['extended_license_price'], 0); ?></td>
+												<td class="py-3 px-4">
+													<?php if ($extended_license_is_sale): ?>
+														<span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded font-medium">🔥 ON SALE</span>
+													<?php else: ?>
+														<span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">No sale</span>
+													<?php endif; ?>
+												</td>
+												<td class="py-3 px-4 text-sm">
+													<?php 
+													$extended_diff = $price_data['extended_license_price'] - $theme_default_price_extended_license;
+													$extended_diff_percent = $theme_default_price_extended_license > 0 ? ($extended_diff / $theme_default_price_extended_license) * 100 : 0;
+													?>
+													<span class="<?php echo $extended_diff < 0 ? 'text-red-600' : ($extended_diff > 0 ? 'text-green-600' : 'text-gray-600'); ?>">
+														<?php echo $extended_diff > 0 ? '+' : ''; ?>$<?php echo number_format($extended_diff, 0); ?>
+														<?php if ($extended_diff != 0): ?>
+															(<?php echo $extended_diff > 0 ? '+' : ''; ?><?php echo number_format($extended_diff_percent, 1); ?>%)
+														<?php endif; ?>
+													</span>
+												</td>
+											</tr>
+											<tr class="border-b border-gray-100">
+												<td class="py-3 px-4 font-medium text-gray-700">Professional Upgrade</td>
+												<td class="py-3 px-4 text-gray-600 font-mono text-sm">$<?php echo number_format($default_professional_price, 0); ?></td>
+												<td class="py-3 px-4 text-gray-600 font-mono text-sm">$<?php echo number_format($live_professional_price, 0); ?></td>
+												<td class="py-3 px-4">
+													<?php if ($professional_license_is_sale): ?>
+														<span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded font-medium">🔥 ON SALE</span>
+													<?php else: ?>
+														<span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">No sale</span>
+													<?php endif; ?>
+												</td>
+												<td class="py-3 px-4 text-sm">
+													<?php 
+													$professional_diff = $live_professional_price - $default_professional_price;
+													$professional_diff_percent = $default_professional_price > 0 ? ($professional_diff / $default_professional_price) * 100 : 0;
+													?>
+													<span class="<?php echo $professional_diff < 0 ? 'text-red-600' : ($professional_diff > 0 ? 'text-green-600' : 'text-gray-600'); ?>">
+														<?php echo $professional_diff > 0 ? '+' : ''; ?>$<?php echo number_format($professional_diff, 2); ?>
+														<?php if ($professional_diff != 0): ?>
+															(<?php echo $professional_diff > 0 ? '+' : ''; ?><?php echo number_format($professional_diff_percent, 1); ?>%)
+														<?php endif; ?>
+													</span>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
 
-license_key=<?php echo esc_html($license_key); ?></pre>
-										</div>
+								<div class="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+									<h5 class="text-sm font-medium text-gray-800 mb-2">Additional Information</h5>
+									<div class="text-sm text-gray-700 space-y-1">
+										<p><strong>Price Data Source:</strong> <?php echo esc_html($price_data['source'] ?? 'unknown'); ?></p>
+										<p><strong>Professional Price Formula:</strong> <code>ceil((($regular_price - 12) * (1 - 0.125)) * 100) / 100</code></p>
+										<p><strong>Professional Sale Logic:</strong> Professional upgrade follows regular license sale status</p>
+										<?php if ($regular_license_is_sale || $extended_license_is_sale): ?>
+										<p class="text-red-600 font-medium">✨ Sales are currently active and will be displayed on the License page!</p>
+										<?php else: ?>
+										<p class="text-gray-600">💡 No sales detected - prices match default configuration values</p>
+										<?php endif; ?>
 									</div>
-									
-									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-										<h5 class="text-sm font-medium text-gray-800 mb-2">Verification URL</h5>
-										<div class="bg-gray-100 p-3 rounded font-mono text-xs">
-											<span class="<?php echo $is_dev ? 'text-yellow-600' : 'text-blue-600'; ?>">
-												<?php echo esc_html($verification_url); ?>
-												<?php echo $is_dev ? ' (Development)' : ' (Production)'; ?>
-											</span>
-										</div>
-									</div>
-									
-									<?php if ($is_error): ?>
-									<div class="bg-red-50 p-4 rounded-lg border border-red-200">
-										<h5 class="text-sm font-medium text-red-800 mb-2">WordPress Error</h5>
-										<div class="bg-red-100 p-3 rounded font-mono text-xs text-red-800">
-											<pre><?php echo esc_html($error_message); ?></pre>
-										</div>
-									</div>
-									<?php else: ?>
-									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-										<h5 class="text-sm font-medium text-gray-800 mb-2">Response Status</h5>
-										<div class="bg-gray-100 p-3 rounded font-mono text-xs">
-											<span class="<?php echo ($response_code >= 200 && $response_code < 300) ? 'text-green-600' : 'text-red-600'; ?>">
-												HTTP/1.1 <?php echo esc_html($response_code); ?>
-											</span>
-											<p class="mt-1">Total time: <?php echo number_format($total_time, 4); ?> seconds</p>
-										</div>
-									</div>
-									
-									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-										<h5 class="text-sm font-medium text-gray-800 mb-2">Response Headers</h5>
-										<div class="bg-gray-100 p-3 rounded font-mono text-xs overflow-x-auto">
-											<pre><?php echo esc_html($header_string); ?></pre>
-										</div>
-									</div>
-									
-									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-										<h5 class="text-sm font-medium text-gray-800 mb-2">Response Body</h5>
-										<div class="bg-gray-100 p-3 rounded overflow-x-auto">
-											<?php 
-											// First check if the content is HTML
-											$content_type = wp_remote_retrieve_header($response, 'content-type');
-											$is_html = strpos($content_type, 'text/html') !== false;
-											$is_json = strpos($content_type, 'application/json') !== false;
-											
-											// If it's JSON, pretty print it
-											if ($is_json || (!$is_html && json_decode($body) !== null && json_last_error() === JSON_ERROR_NONE)) {
-												$json_body = json_decode($body);
-												echo '<pre class="font-mono text-xs">' . esc_html(json_encode($json_body, JSON_PRETTY_PRINT)) . '</pre>';
-											}
-											// If it's HTML, render it in an iframe
-											else if ($is_html) {
-												echo '<div class="mb-2"><span class="text-xs text-gray-500">Showing rendered HTML response:</span></div>';
-												echo '<div class="border border-gray-200">';
-												echo '<iframe id="html-response-frame" class="w-full" style="height: 400px;" srcdoc="' . esc_attr($body) . '"></iframe>';
-												echo '</div>';
-												echo '<div class="mt-4">';
-												echo '<button id="toggle-html-source" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">Show HTML Source</button>';
-												echo '<div id="html-source" class="mt-2 hidden">';
-												echo '<pre class="font-mono text-xs">' . esc_html($body) . '</pre>';
-												echo '</div>';
-												echo '</div>';
-												// Add JavaScript to toggle HTML source
-												echo '<script>
-													document.getElementById("toggle-html-source").addEventListener("click", function() {
-														var sourceEl = document.getElementById("html-source");
-														var buttonEl = document.getElementById("toggle-html-source");
-														if (sourceEl.classList.contains("hidden")) {
-															sourceEl.classList.remove("hidden");
-															buttonEl.textContent = "Hide HTML Source";
-														} else {
-															sourceEl.classList.add("hidden");
-															buttonEl.textContent = "Show HTML Source";
-														}
-													});
-												</script>';
-											}
-											// Otherwise, just show as text
-											else {
-												echo '<pre class="font-mono text-xs">' . esc_html($body) . '</pre>';
-											}
-											?>
-										</div>
-									</div>
-									<?php endif; ?>
 								</div>
 							</div>
 						</div>
@@ -640,7 +813,7 @@ license_key=<?php echo esc_html($license_key); ?></pre>
 							<div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
 								<h3 class="text-base font-semibold text-gray-900 flex items-center gap-2">
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-										<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
+										<path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
 									</svg>
 									Theme Price Update API Test
 								</h3>
@@ -655,7 +828,7 @@ license_key=<?php echo esc_html($license_key); ?></pre>
 								// Get the base API URL
 								$api_base_url = $is_dev 
 									? $config->get_dev_api_base_url() 
-									: $config->get_api_base_url();
+									: $config->get_api_base_urls()[0];
 								
 								// Make sure the base URL ends with a slash
 								$api_base_url = rtrim($api_base_url, '/') . '/';

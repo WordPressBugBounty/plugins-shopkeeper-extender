@@ -179,15 +179,26 @@ class GBT_Theme_Price_Updater
 	 */
 	private function fetch_price_data(array $post_data)
 	{
-		// Send the request
-		$response = wp_remote_post($this->server_api_url, [
+		// Get URLs from config
+		if ($this->is_development_environment()) {
+			$config = GBT_License_Config::get_instance();
+			$urls = [$config->get_dev_theme_price_api_url()];
+		} else {
+			$config = GBT_License_Config::get_instance();
+			$urls = $config->get_theme_price_urls();
+		}
+
+		$request_args = [
 			'timeout' => 30,
 			'body' => $post_data
-		]);
+		];
+
+		// Try URLs in order until one returns valid JSON
+		$response = $this->try_price_urls_with_fallback($urls, $request_args);
 		
 		// Check for errors
 		if (is_wp_error($response)) {
-			$this->log_error('Error fetching price data: ' . $response->get_error_message());
+			$this->log_error('All theme price URLs failed: ' . $response->get_error_message());
 			return false;
 		}
 		
@@ -213,6 +224,34 @@ class GBT_Theme_Price_Updater
 		}
 		
 		return $data;
+	}
+
+	/**
+	 * Try multiple theme price URLs with fallback until one returns valid JSON
+	 * 
+	 * @param array $urls Array of URLs to try
+	 * @param array $request_args WordPress HTTP request arguments
+	 * @return mixed WordPress HTTP response or WP_Error
+	 */
+	private function try_price_urls_with_fallback(array $urls, array $request_args)
+	{
+		foreach ($urls as $url) {
+			$response = wp_remote_post($url, $request_args);
+			
+			// If request succeeded and returned valid JSON, use this response
+			if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+				$body = wp_remote_retrieve_body($response);
+				if (!empty($body)) {
+					$data = json_decode($body, true);
+					if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
+						return $response;
+					}
+				}
+			}
+		}
+
+		// If all URLs failed, return the last response
+		return $response;
 	}
 	
 	/**

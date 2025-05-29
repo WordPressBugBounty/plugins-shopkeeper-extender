@@ -861,7 +861,14 @@ class GBT_License_Manager
 	 */
 	private function verify_with_envato(string $license_key, string $theme_slug): array
 	{
-		$verification_url = $this->get_verification_url();
+		// Get URLs from config
+		if ($this->is_development_environment()) {
+			$config = GBT_License_Config::get_instance();
+			$urls = [$config->get_dev_verification_url()];
+		} else {
+			$config = GBT_License_Config::get_instance();
+			$urls = $config->get_verification_urls();
+		}
 
 		// Set request parameters
 		$request_args = [
@@ -876,8 +883,8 @@ class GBT_License_Manager
 			]
 		];
 
-		// Make the API request
-		$response = wp_remote_post($verification_url, $request_args);
+		// Try URLs in order until one returns valid JSON
+		$response = $this->try_urls_with_fallback($urls, $request_args);
 
 		// Handle response errors
 		if (is_wp_error($response)) {
@@ -899,6 +906,32 @@ class GBT_License_Manager
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Try multiple URLs with fallback until one returns valid JSON
+	 * 
+	 * @param array $urls Array of URLs to try
+	 * @param array $request_args WordPress HTTP request arguments
+	 * @return mixed WordPress HTTP response or WP_Error
+	 */
+	private function try_urls_with_fallback(array $urls, array $request_args)
+	{
+		foreach ($urls as $url) {
+			$response = wp_remote_post($url, $request_args);
+			
+			// If request succeeded and returned valid JSON, use this response
+			if (!is_wp_error($response)) {
+				$body = wp_remote_retrieve_body($response);
+				$data = json_decode($body, true);
+				if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
+					return $response;
+				}
+			}
+		}
+
+		// If all URLs failed, return the last response
+		return $response;
 	}
 }
 

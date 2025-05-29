@@ -92,13 +92,16 @@ class GBT_License_Config
 	}
 
 	/**
-	 * Get the API base URL for production
+	 * Get all API base URLs (primary and fallback) for production
 	 * 
-	 * @return string The base URL for API endpoints
+	 * @return array Array of base URLs to try in order
 	 */
-	public function get_api_base_url(): string
+	public function get_api_base_urls(): array
 	{
-		return 'https://my.getbowtied.com/v1';
+		return [
+			'https://my.getbowtied.net/v1',
+			'https://my.getbowtied.com/v1'
+		];
 	}
 
 	/**
@@ -108,7 +111,22 @@ class GBT_License_Config
 	 */
 	public function get_verification_production_url(): string
 	{
-		return $this->get_api_base_url() . '/verify_license.php';
+		$base_urls = $this->get_api_base_urls();
+		return $base_urls[0] . '/verify_license.php';
+	}
+
+	/**
+	 * Get all verification URLs (primary and fallback)
+	 * 
+	 * @return array Array of verification URLs to try in order
+	 */
+	public function get_verification_urls(): array
+	{
+		$urls = [];
+		foreach ($this->get_api_base_urls() as $base_url) {
+			$urls[] = $base_url . '/verify_license.php';
+		}
+		return $urls;
 	}
 
 	/**
@@ -118,7 +136,22 @@ class GBT_License_Config
 	 */
 	public function get_license_server_api_url(): string
 	{
-		return $this->get_api_base_url() . '/license_receiver_api.php';
+		$base_urls = $this->get_api_base_urls();
+		return $base_urls[0] . '/license_receiver_api.php';
+	}
+
+	/**
+	 * Get all license server URLs (primary and fallback)
+	 * 
+	 * @return array Array of license server URLs to try in order
+	 */
+	public function get_license_server_urls(): array
+	{
+		$urls = [];
+		foreach ($this->get_api_base_urls() as $base_url) {
+			$urls[] = $base_url . '/license_receiver_api.php';
+		}
+		return $urls;
 	}
 
 	/**
@@ -128,7 +161,22 @@ class GBT_License_Config
 	 */
 	public function get_theme_price_api_url(): string
 	{
-		return $this->get_api_base_url() . '/update_theme_price.php';
+		$base_urls = $this->get_api_base_urls();
+		return $base_urls[0] . '/update_theme_price.php';
+	}
+
+	/**
+	 * Get all theme price URLs (primary and fallback)
+	 * 
+	 * @return array Array of theme price URLs to try in order
+	 */
+	public function get_theme_price_urls(): array
+	{
+		$urls = [];
+		foreach ($this->get_api_base_urls() as $base_url) {
+			$urls[] = $base_url . '/update_theme_price.php';
+		}
+		return $urls;
 	}
 
 	// -------------------------------------------------------------------------
