@@ -366,10 +366,10 @@ if (!function_exists('getbowtied_license_content')) {
 								<?php if ($is_support_active): ?>
 									Thank you for activating your license. Your theme is now fully unlocked with premium features, support, and updates.
 								<?php else: ?>
-									Your license is active, but your Professional Plan plan <span class="text-red-600 font-medium">has expired</span>. Renew your support plan to access premium features, automatic updates, and priority assistance. <a id="learn-more-link" href="#professional-upgrade-section" class="text-wp-blue hover:underline">Learn more &darr;</a>
+									Your license is active, but your Professional Plan plan <span class="text-red-600 font-medium">has expired</span>. Renew your support plan to access premium features, built-in updates, and priority assistance. <a id="learn-more-link" href="#professional-upgrade-section" class="text-wp-blue hover:underline">Learn more &darr;</a>
 								<?php endif; ?>
 							<?php else: ?>
-								Activate your license to unlock premium features, automatic updates, and dedicated support.
+								Activate your license to unlock premium features, built-in updates, and dedicated support.
 							<?php endif; ?>
 						</p>
 						<form method="post" action="" class="space-y-6 mt-12">
@@ -559,7 +559,7 @@ if (!function_exists('getbowtied_license_content')) {
 															} else {
 																echo 'In ' . esc_html($days_remaining) . ' days, you will';
 															}
-															?> lose access to automatic updates, priority assistance, and security patches.
+															?> lose access to built-in updates, priority assistance, and security patches.
 														</p>
 													</div>
 												</div>
@@ -854,7 +854,7 @@ if (!function_exists('getbowtied_license_content')) {
 				</div>
 				<div class="mx-auto max-w-4xl text-center">
 					<h2 id="license-options" class="text-base/7 font-semibold text-wp-blue">Licensing Options</h2>
-					<p class="mt-2 text-4xl font-semibold tracking-tight text-balance text-gray-900 sm:text-5xl">Find the Perfect License for You</p>
+					<p class="mt-2 text-4xl font-semibold tracking-tight text-balance text-gray-900 sm:text-5xl">License Tiers Available to You</p>
 				</div>
 				<p class="mx-auto mt-6 max-w-2xl text-center text-lg font-medium text-pretty text-gray-600 sm:text-xl/8">Pick the license tier that suits you best! Each option comes with unique features and support levels, so you can get exactly what you need to make your project a success.</p>
 
@@ -882,7 +882,7 @@ if (!function_exists('getbowtied_license_content')) {
 							<svg class="h-6 w-6 text-green-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 								<path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
 							</svg>
-							<span class="text-sm font-medium text-gray-900">You already own this license</span>
+							<span class="text-sm font-medium text-gray-900">You currently own this license tier.</span>
 						</div>
 						<p class="mt-6 text-base/7 text-gray-600">Perfect for most websites and client projects with a lifetime license.</p>
 						<ul role="list" class="mt-8 space-y-3 text-sm/6 text-gray-600 sm:mt-10">
@@ -975,7 +975,7 @@ if (!function_exists('getbowtied_license_content')) {
 							<?php endif; ?>
 						<?php endif; ?>
 
-						<p class="mt-6 text-base/7 text-gray-300">Enjoy exclusive benefits: Stay worry-free with automatic updates, priority bug fixes, and expert support whenever you need it.<?php if (!$is_support_active): ?> Renew today for a smoother, hassle-free experience.<?php endif; ?></p>
+						<p class="mt-6 text-base/7 text-gray-300">Enjoy exclusive benefits: Stay worry-free with built-in updates, priority bug fixes, and expert support whenever you need it.<?php if (!$is_support_active): ?> Renew today for a smoother, hassle-free experience.<?php endif; ?></p>
 
 						<?php if (!$is_support_active): ?>
 							<div class="mt-6 inline-flex items-center px-3 py-1.5 rounded-full bg-amber-300 text-amber-900 text-sm font-medium">
@@ -1043,6 +1043,7 @@ if (!function_exists('getbowtied_license_content')) {
 							</div>
 							<a href="<?php echo esc_url($gbt_dashboard_setup->get_theme_config('theme_sales_page_url')); ?>" target="_blank" aria-describedby="tier-professional" class="mt-6 block rounded-md bg-wp-blue px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-xs hover:bg-wp-blue/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wp-blue sm:mt-8">Upgrade Now – Renew Support</a>
 							<p class="mt-2 text-xs text-center text-amber-600 font-medium px-4">Grab this amazing offer while you can! Availability and price may change in <span id="countdown-timer"></span> minutes. Don't miss out!</p>
+							<a href="https://1.envato.market/extend-or-renew-items" target="_blank" class="mt-6 text-sm text-center text-gray-300 hover:text-white block transition-colors duration-200 underline decoration-dotted">Learn more about support renewal</a>
 						<?php endif; ?>
 					</div>
 
@@ -1161,7 +1162,7 @@ if (!function_exists('getbowtied_license_content')) {
 										<p class="text-sm text-gray-600 mt-1">The Professional Upgrade is our premium support and updates plan:</p>
 									<?php endif; ?>
 									<ul class="text-sm text-gray-600 list-disc ml-5 mt-2 space-y-1">
-										<li>Automatic updates and security fixes</li>
+										<li>Built-in updates and security fixes</li>
 										<li>Expert support from our dedicated team</li>
 										<li>Priority bug fixes and new features</li>
 										<li>All premium add-ons included</li>

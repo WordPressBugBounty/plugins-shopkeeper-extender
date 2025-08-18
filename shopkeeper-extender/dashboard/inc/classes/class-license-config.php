@@ -99,8 +99,8 @@ class GBT_License_Config
 	public function get_api_base_urls(): array
 	{
 		return [
-			'https://my.getbowtied.net/v1',
-			'https://my.getbowtied.com/v1'
+			'https://api1.getbowtied.net/v1',
+			'https://api2.getbowtied.net/v1'
 		];
 	}
 

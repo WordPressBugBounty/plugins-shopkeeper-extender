@@ -86,12 +86,18 @@ class Theme_LI {
      */
     private static function set_theme_slug_from_config($base_paths) {
         if (!empty($base_paths) && !empty($base_paths['path'])) {
-            $config_path = $base_paths['path'] . '/config.php';
+            $config_path = $base_paths['path'] . '/dashboard/config.php';
             if (file_exists($config_path)) {
                 $config = include $config_path;
                 if (isset($config['supported_themes'])) {
-                    // Use the first key from supported_themes as the current theme
-                    self::$theme_slug = key($config['supported_themes']);
+                    // Use the current theme slug, not the first key from config
+                    $current_theme = get_template();
+                    if (isset($config['supported_themes'][$current_theme])) {
+                        self::$theme_slug = $current_theme;
+                    } else {
+                        // Fallback to first supported theme if current theme not in config
+                        self::$theme_slug = key($config['supported_themes']);
+                    }
                 }
             }
         }
