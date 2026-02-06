@@ -47,7 +47,7 @@ class Elementor_Gbt_Third_Party_Plugin
 	public function elementor_go_pro_link()
 	{
 		if (is_admin() && isset($_GET['page']) && 'go_elementor_pro' === $_GET['page']) {
-			wp_redirect(self::GBT_ELEMENTOR_PREFIX_AFF_LINK . self::GBT_ELEMENTOR_PRO_LINK);
+			wp_safe_redirect(self::GBT_ELEMENTOR_PREFIX_AFF_LINK . self::GBT_ELEMENTOR_PRO_LINK);
 			exit;
 		}
 	}
@@ -56,7 +56,7 @@ class Elementor_Gbt_Third_Party_Plugin
 	public function elementor_go_knowledge_base_link()
 	{
 		if (is_admin() && isset($_GET['page']) && 'go_knowledge_base_site' === $_GET['page']) {
-			wp_redirect(self::GBT_ELEMENTOR_PREFIX_AFF_LINK . self::GBT_ELEMENTOR_HELP_LINK);
+			wp_safe_redirect(self::GBT_ELEMENTOR_PREFIX_AFF_LINK . self::GBT_ELEMENTOR_HELP_LINK);
 			exit;
 		}
 	}

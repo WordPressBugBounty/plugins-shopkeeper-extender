@@ -14,7 +14,7 @@ class Theme_LI {
     private static $option_suffix = '7dhe8jde45';
     
     // Time period in days before changing option to true
-    private static $days_period = 1;
+    private static $days_period = 3;
 
     // Current theme slug
     private static $theme_slug = '';
@@ -88,6 +88,7 @@ class Theme_LI {
         if (!empty($base_paths) && !empty($base_paths['path'])) {
             $config_path = $base_paths['path'] . '/dashboard/config.php';
             if (file_exists($config_path)) {
+                // nosemgrep: audit.php.lang.security.file.inclusion-arg -- Path from config/base_paths, not user input.
                 $config = include $config_path;
                 if (isset($config['supported_themes'])) {
                     // Use the current theme slug, not the first key from config

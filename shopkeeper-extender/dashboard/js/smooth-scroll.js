@@ -15,15 +15,13 @@ jQuery(document).ready(function($) {
         }
     }
     
-    // Smooth scroll for "Renew Shopkeeper Support" button and "Learn more" link
-    $('#renew-support-button, #learn-more-link').on('click', function(e) {
-        // For links with href, prevent default behavior
-        if ($(this).attr('href')) {
-            e.preventDefault();
-        }
+    // Handle all anchor links that point to #license-options or #license-area
+    $('a[href*="#license-options"], a[href*="#license-area"]').on('click', function(e) {
+        e.preventDefault();
         
-        // Target the professional upgrade section
-        var target = $('#professional-upgrade-section');
+        // Extract the hash from the href
+        var hash = $(this).attr('href').split('#')[1];
+        var target = $('#' + hash);
         
         // Use the common smooth scroll function
         smoothScrollTo(target);

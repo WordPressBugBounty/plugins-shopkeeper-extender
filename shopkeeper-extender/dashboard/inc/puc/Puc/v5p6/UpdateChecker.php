@@ -529,7 +529,7 @@ if ( !class_exists(UpdateChecker::class, false) ):
 		 */
 		public function triggerError($message, $errorType) {
 			if ( $this->isDebugModeEnabled() ) {
-				//phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- Only happens in debug mode.
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error, QITStandard.PHP.DebugCode.DebugFunctionFound -- Only happens in debug mode.
 				trigger_error(esc_html($message), $errorType);
 			}
 		}

@@ -54,6 +54,9 @@ class GBT_License_Localhosts
 			'127.0.0.1',
 			'local',
 			'local.test',
+			'*.localwp.com',
+			'localwp.com',
+			'*.localwp.site',
 			'dev',
 			'development',
 			'staging',
@@ -83,6 +86,7 @@ class GBT_License_Localhosts
 			'.localhost',
 			'.dev',
 			'.development',
+			'.localwp',
 			'.example',
 			'.invalid',
 			'.staging',
@@ -107,9 +111,9 @@ class GBT_License_Localhosts
 	 */
 	public function is_localhost(): bool
 	{
-		$server_name = $_SERVER['SERVER_NAME'] ?? '';
-		$server_addr = $_SERVER['SERVER_ADDR'] ?? '';
-		$remote_addr = $_SERVER['REMOTE_ADDR'] ?? '';
+		$server_name = isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : '';
+		$server_addr = isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : '';
+		$remote_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 
 		// More specific domain check - ensure we're checking for exact extensions
 		$is_local_domain = false;

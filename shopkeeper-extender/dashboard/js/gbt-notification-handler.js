@@ -6,6 +6,7 @@
 (function($) {
     'use strict';
     
+    // Handle legacy notifications with gbt-dashboard-notification class
     $(document).on('click', '.gbt-dashboard-notification .notice-dismiss, .gbt-dashboard-notification .dismiss-notification', function(e) {
         if ($(this).is('a')) e.preventDefault();
         

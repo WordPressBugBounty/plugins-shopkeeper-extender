@@ -55,36 +55,20 @@ class GBT_Theme_Price_Updater
 	 */
 	private function __construct()
 	{
-		// Set the server API URL based on environment
+		// Set the server API URL
 		$this->server_api_url = $this->get_api_url();
 	}
 
 	/**
-	 * Determine the server API URL based on environment
+	 * Determine the server API URL
 	 *
 	 * @return string The server API URL
 	 */
 	private function get_api_url(): string
 	{
-		if ($this->is_development_environment()) {
-			$config = GBT_License_Config::get_instance();
-			return $config->get_dev_theme_price_api_url();
-		}
-
-		// Use remote URL for production
 		$config = GBT_License_Config::get_instance();
-		return $config->get_theme_price_api_url();
-	}
-
-	/**
-	 * Check if this is a development environment
-	 *
-	 * @return bool Whether this is a development environment
-	 */
-	public function is_development_environment(): bool
-	{
-		$config = GBT_License_Config::get_instance();
-		return $config->is_dev_mode_enabled();
+		$urls = $config->get_theme_price_urls();
+		return $urls[0] ?? '';
 	}
 
 	/**
@@ -180,13 +164,8 @@ class GBT_Theme_Price_Updater
 	private function fetch_price_data(array $post_data)
 	{
 		// Get URLs from config
-		if ($this->is_development_environment()) {
-			$config = GBT_License_Config::get_instance();
-			$urls = [$config->get_dev_theme_price_api_url()];
-		} else {
-			$config = GBT_License_Config::get_instance();
-			$urls = $config->get_theme_price_urls();
-		}
+		$config = GBT_License_Config::get_instance();
+		$urls = $config->get_theme_price_urls();
 
 		$request_args = [
 			'timeout' => 30,
@@ -262,6 +241,7 @@ class GBT_Theme_Price_Updater
 	private function log_error(string $message): void
 	{
 		if (defined('WP_DEBUG') && WP_DEBUG) {
+			// phpcs:ignore QITStandard.PHP.DebugCode.DebugFunctionFound -- Legitimate debug logging when WP_DEBUG is enabled.
 			error_log('[Theme Price Updater] ' . $message);
 		}
 	}

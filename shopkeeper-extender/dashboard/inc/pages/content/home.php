@@ -22,6 +22,9 @@ if (!function_exists('getbowtied_home_content')) {
 
 		// Content Start
 		include_once $base_paths['path'] . '/dashboard/inc/pages/content/template-parts/content-start.php';
+		
+		// Include badges component
+		include_once $base_paths['path'] . '/dashboard/inc/pages/content/template-parts/badges.php';
 ?>
 
 		<div class="overflow-hidden py-24 sm:py-32">
@@ -30,49 +33,53 @@ if (!function_exists('getbowtied_home_content')) {
 				<div class="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-2">
 					<div class="lg:pr-8">
 						<div class="lg:max-w-lg">
-							<div class="flex items-center gap-3">
-								<span class="inline-flex items-center gap-x-1.5 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white">
-									<svg class="size-2 fill-green-400" viewBox="0 0 6 6" aria-hidden="true">
-										<circle cx="3" cy="3" r="3" />
-									</svg>
-									VERSION <?php echo esc_html($theme_version_gbt_dash); ?>
-								</span>
-								<a href="<?php echo esc_url($theme_url_changelog_gbt_dash); ?>" target="_blank" class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors">
-									CHANGELOG
-								</a>
-							</div>
+							<?php gbt_display_version_badge(); ?>
 							<h2 class="mt-4 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl leading-14"><?php echo esc_html($theme_name_gbt_dash); ?></h2>
 							<dl class="mt-10 max-w-xl space-y-8 text-base/7 text-gray-600 lg:max-w-none">
+								<?php 
+								$auto_update_status = $gbt_dashboard_setup->get_theme_auto_update_status();
+								$success_content = $gbt_dashboard_setup->get_auto_update_content('success');
+								$disabled_content = $gbt_dashboard_setup->get_auto_update_content('disabled');
+								if (!$auto_update_status['is_enabled']): 
+								?>
+										<div class="relative pl-9 gbt-auto-update-section rounded-lg" data-success-title="<?php echo esc_attr($success_content['title']); ?>" data-success-description="<?php echo esc_attr($success_content['description']); ?>" data-success-icon="<?php echo esc_attr($success_content['icon']); ?>">
+									<dt class="inline font-semibold">
+										<svg class="gbt-auto-update-icon absolute top-1 left-1 size-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+												<path stroke-linecap="round" stroke-linejoin="round" d="<?php echo esc_attr($disabled_content['icon']); ?>" />
+										</svg>
+												<span class="gbt-auto-update-title"><?php echo esc_html($disabled_content['title']); ?></span>
+									</dt>
+												<dd class="gbt-auto-update-description inline"><?php echo esc_html($disabled_content['description']); ?></dd>
+									<dd class="mt-3"><?php echo wp_kses_post($gbt_dashboard_setup->get_auto_update_enable_button()); ?></dd>
+								</div>
+								<?php else: ?>
 								<div class="relative pl-9">
 									<dt class="inline font-semibold text-gray-900">
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute top-1 left-1 size-5">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+												<path stroke-linecap="round" stroke-linejoin="round" d="<?php echo esc_attr($success_content['icon']); ?>" />
 										</svg>
-										New to <?php echo esc_html($theme_name_gbt_dash); ?>?
+												<?php echo esc_html($success_content['title']); ?>
 									</dt>
-									<dd class="inline">Download the <a href="<?php echo esc_html($theme_child_download_link_gbt_dash); ?>">Child Theme</a> to customize without risking core theme updates.</dd>
+												<dd class="inline"><?php echo esc_html($success_content['description']); ?></dd>
 								</div>
+								<?php endif; ?>
 								<div class="relative pl-9">
-									<dt class="inline font-semibold text-gray-900">
+									<dt class="inline font-semibold">
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute top-1 left-1 size-5">
-											<path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+											<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 14.5M14.25 3.104c.251.023.501.05.75.082M19.8 14.5l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 1-6.23-.693L5 14.5m14.8.5 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.611L5 14.5" />
 										</svg>
-										Accelerate Your Project.
+										Want to customize files?
 									</dt>
-									<?php if (is_plugin_active('kits-templates-and-patterns/kits-templates-and-patterns.php')): ?>
-										<dd class="inline">Use our <a href="<?php echo esc_url(admin_url('themes.php?page=kits-templates-and-patterns&browse=' . $theme_slug_gbt_dash)); ?>">"Kits, Templates and Patterns"</a> plugin to launch your website faster with pre-designed templates.</dd>
-									<?php else: ?>
-										<dd class="inline">Activate our <a href="<?php echo esc_url(admin_url('admin.php?page=getbowtied-plugins')); ?>">"Kits, Templates and Patterns"</a> plugin to launch your project faster.</dd>
-									<?php endif; ?>
+									<dd class="inline">Use the <a href="<?php echo esc_html($theme_child_download_link_gbt_dash); ?>" class="underline">Child Theme</a> to safely customize your website's code without losing changes when the theme updates.</dd>
 								</div>
 								<div class="relative pl-9">
-									<dt class="inline font-semibold text-gray-900">
+									<dt class="inline font-semibold">
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute top-1 left-1 size-5">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42" />
 										</svg>
-										Personalize Your Design.
+										Personalize your website.
 									</dt>
-									<dd class="inline">Use the <a href="<?php echo esc_url(admin_url('customize.php')); ?>">Customizer</a> to effortlessly tailor your website's look and feel to match your unique brand.</dd>
+									<dd class="inline">Use the <a href="<?php echo esc_url(admin_url('customize.php')); ?>" class="underline">Customizer</a> to effortlessly tailor your website's look and feel to match your unique brand. Your customizations will not be reset on theme updates.</dd>
 								</div>
 								<div class="relative pl-9">
 									<dt class="inline font-semibold text-gray-900">
@@ -81,7 +88,7 @@ if (!function_exists('getbowtied_home_content')) {
 										</svg>
 										Need Support?
 									</dt>
-									<dd class="inline">Our team is ready to <a href="<?php echo esc_url(admin_url('admin.php?page=getbowtied-help')); ?>">help you</a> overcome challenges and unlock your website's full potential.</dd>
+									<dd class="inline">Our team is ready to <a href="<?php echo esc_url(admin_url('admin.php?page=getbowtied-help')); ?>" class="underline">help you</a> overcome challenges and unlock your website's full potential.</dd>
 								</div>
 							</dl>
 						</div>
@@ -111,7 +118,7 @@ if (!function_exists('getbowtied_home_content')) {
 										<dd class="text-sm text-gray-500">Increase your revenue by offering all popular payment methods with no monthly fees or setup costs.</dd>
 										<dt class="sr-only">Role</dt>
 										<dd class="mt-3">
-											<span class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">Revenue Booster</span>
+											<span class="inline-flex items-center rounded-full bg-[var(--color-wp-green)]/10 px-2 py-1 text-xs font-medium text-[var(--color-wp-green)] ring-1 ring-[var(--color-wp-green)]/20 ring-inset">Revenue Booster</span>
 										</dd>
 									</dl>
 								</div>
@@ -136,7 +143,7 @@ if (!function_exists('getbowtied_home_content')) {
 										<dd class="text-sm text-gray-500">Boost your average order value by creating compelling product packages that encourage larger purchases.</dd>
 										<dt class="sr-only">Role</dt>
 										<dd class="mt-3">
-											<span class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">Revenue Booster</span>
+											<span class="inline-flex items-center rounded-full bg-[var(--color-wp-green)]/10 px-2 py-1 text-xs font-medium text-[var(--color-wp-green)] ring-1 ring-[var(--color-wp-green)]/20 ring-inset">Revenue Booster</span>
 										</dd>
 									</dl>
 								</div>
@@ -161,7 +168,7 @@ if (!function_exists('getbowtied_home_content')) {
 										<dd class="text-sm text-gray-500">Reduce support inquiries and enhance customer satisfaction by providing real-time delivery updates.</dd>
 										<dt class="sr-only">Role</dt>
 										<dd class="mt-3">
-											<span class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">Revenue Booster</span>
+											<span class="inline-flex items-center rounded-full bg-[var(--color-wp-green)]/10 px-2 py-1 text-xs font-medium text-[var(--color-wp-green)] ring-1 ring-[var(--color-wp-green)]/20 ring-inset">Revenue Booster</span>
 										</dd>
 									</dl>
 								</div>
@@ -186,7 +193,7 @@ if (!function_exists('getbowtied_home_content')) {
 										<dd class="text-sm text-gray-500">Generate additional revenue streams and attract new customers by offering flexible digital gift options.</dd>
 										<dt class="sr-only">Role</dt>
 										<dd class="mt-3">
-											<span class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">Revenue Booster</span>
+											<span class="inline-flex items-center rounded-full bg-[var(--color-wp-green)]/10 px-2 py-1 text-xs font-medium text-[var(--color-wp-green)] ring-1 ring-[var(--color-wp-green)]/20 ring-inset">Revenue Booster</span>
 										</dd>
 									</dl>
 								</div>

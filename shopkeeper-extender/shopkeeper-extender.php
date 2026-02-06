@@ -4,13 +4,13 @@
  * Plugin Name:       		Shopkeeper Extender
  * Plugin URI:        		https://shopkeeper.wp-theme.design/
  * Description:       		Extends the functionality of Shopkeeper with theme specific features.
- * Version:           		6.1.1
+ * Version:           		7.2
  * Author:            		Get Bowtied
  * Author URI:				https://getbowtied.com
  * Text Domain:				shopkeeper-extender
  * Domain Path:				/languages/
  * Requires at least: 		6.0
- * Tested up to: 			6.7.2
+ * Tested up to: 			6.9
  *
  * @package  Shopkeeper Extender
  * @author   GetBowtied
@@ -18,10 +18,11 @@
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
-} // Exit if accessed directly
+}
 
-require 'core/updater/plugin-update-checker.php';
-$myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+require 'dashboard/inc/puc/plugin-update-checker.php';
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+$plugin_update_checker = PucFactory::buildUpdateChecker(
 	'https://raw.githubusercontent.com/getbowtied/shopkeeper-extender/master/core/updater/assets/plugin.json',
 	__FILE__,
 	'shopkeeper-extender'
@@ -90,7 +91,7 @@ if ( ! class_exists( 'ShopkeeperExtender' ) ) :
 
 			}
 
-			if ( is_admin() ) {
+			if ( is_admin() || ( defined('WP_CLI') && WP_CLI ) ) {
 				global $gbt_dashboard_params;
 				$gbt_dashboard_params = array(
 					'gbt_theme_slug' => $this->theme_slug,

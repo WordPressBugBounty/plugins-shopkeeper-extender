@@ -12,7 +12,6 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 		$base_paths = $gbt_dashboard_setup->get_base_paths();
 		$theme_name_gbt_dash = $gbt_dashboard_setup->get_theme_name();
 		$theme_version_gbt_dash = $gbt_dashboard_setup->get_theme_version();
-
 		// Load the License Manager class if not already loaded
 		if (!class_exists('GBT_License_Manager')) {
 			require_once $base_paths['path'] . '/dashboard/inc/classes/class-license-manager.php';
@@ -23,15 +22,12 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 		$config = GBT_License_Config::get_instance();
 
 		// Server Information
-		$server_name = $_SERVER['SERVER_NAME'] ?? 'Not available';
-		$server_addr = $_SERVER['SERVER_ADDR'] ?? 'Not available';
-		$remote_addr = $_SERVER['REMOTE_ADDR'] ?? 'Not available';
+		$server_name = isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : 'Not available';
+		$server_addr = isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : 'Not available';
+		$remote_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : 'Not available';
 
 		// Environment Configuration
 		$is_localhost = $license_manager->is_localhost();
-		$is_development = $license_manager->is_development_environment();
-		$is_dev = $config->is_dev_mode_enabled();
-		$is_dev_env = $license_manager->is_development_environment();
 		$localhost_hostnames = $config->get_localhost_hostnames();
 		$localhost_extensions = $config->get_localhost_domain_extensions();
 
@@ -78,7 +74,6 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 			'Server Address ($_SERVER[\'SERVER_ADDR\'])' => $server_addr,
 			'Remote Address ($_SERVER[\'REMOTE_ADDR\'])' => $remote_addr,
 			'Localhost Detection' => $is_localhost ? 'true' : 'false',
-			'Development Environment' => $is_dev_env ? 'true' : 'false',
 			'PHP Version' => phpversion(),
 			'WordPress Version' => get_bloginfo('version'),
 			'OS/Platform' => php_uname()
@@ -108,6 +103,9 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 
 		// Content Start
 		include_once $base_paths['path'] . '/dashboard/inc/pages/content/template-parts/content-start.php';
+		
+		// Include badges component
+		include_once $base_paths['path'] . '/dashboard/inc/pages/content/template-parts/badges.php';
 
 		// Main content
 ?>
@@ -117,14 +115,7 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 				<div class="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-1">
 					<div>
 						<div class="lg:max-w-lg">
-							<div class="flex items-center gap-3">
-								<span class="inline-flex items-center gap-x-1.5 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white">
-									<svg class="size-2 fill-green-400" viewBox="0 0 6 6" aria-hidden="true">
-										<circle cx="3" cy="3" r="3" />
-									</svg>
-									VERSION <?php echo esc_html($theme_version_gbt_dash); ?>
-								</span>
-							</div>
+							<?php gbt_display_version_badge(); ?>
 							<h2 class="mt-4 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl leading-14"><?php echo esc_html($theme_name_gbt_dash); ?> System Diagnostics</h2>
 							<p class="mt-6 text-lg leading-8 text-gray-600">
 								View detailed information about your server environment, WordPress configuration, and license detection settings.
@@ -166,29 +157,25 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 									</table>
 								</div>
 
-								<div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-md p-4">
+								<div class="mt-6 bg-[var(--color-wp-yellow)]/10 border border-[var(--color-wp-yellow)]/20 rounded-md p-4">
 									<div class="flex">
 										<div class="flex-shrink-0">
-											<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+											<svg class="h-5 w-5 text-[var(--color-wp-yellow)]" viewBox="0 0 20 20" fill="currentColor">
 												<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
 											</svg>
 										</div>
 										<div class="ml-3">
-											<h3 class="text-sm font-medium text-yellow-800">Environment Detection Status</h3>
-											<div class="mt-2 text-sm text-yellow-700">
+											<h3 class="text-sm font-medium text-[var(--color-wp-yellow)]">Environment Detection Status</h3>
+											<div class="mt-2 text-sm text-[var(--color-wp-yellow)]">
 												<p>The system uses the above parameters to determine if your site is running in a localhost environment. Localhost environments skip server database updates for license verification.</p>
 												<p class="mt-2">
 													<strong>Current environment detection:</strong><br>
 													<?php if ($is_localhost): ?>
-														<span class="text-green-600 font-semibold">• Detected as localhost</span> (server database updates are skipped)<br>
+														<span class="text-[var(--color-wp-green)] font-semibold">• Detected as localhost</span> (server database updates are skipped)<br>
 													<?php else: ?>
-														<span class="text-blue-600 font-semibold">• Detected as production</span> (full license verification with server database updates)<br>
+														<span class="text-[var(--color-wp-blue)] font-semibold">• Detected as production</span> (full license verification with server database updates)<br>
 													<?php endif; ?>
-													<?php if ($is_dev_env): ?>
-														<span class="text-green-600 font-semibold">• Development mode is enabled (WP_GBT_DEV_ENV = true)</span> (using local development settings)
-													<?php else: ?>
-														<span class="text-blue-600 font-semibold">• Production mode is enabled (WP_GBT_DEV_ENV = false)</span> (using live API endpoints)
-													<?php endif; ?>
+								<span class="text-[var(--color-wp-blue)] font-semibold">• Production endpoints are being used for all license requests</span>
 												</p>
 											</div>
 										</div>
@@ -242,24 +229,24 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 								</h3>
 							</div>
 							<div class="p-8">
-								<div class="mb-6 p-4 rounded-lg border <?php echo $is_license_active ? 'border-green-200 bg-green-50' : 'border-yellow-200 bg-yellow-50'; ?>">
+								<div class="mb-6 p-4 rounded-lg border <?php echo $is_license_active ? 'border-[var(--color-wp-green)]/20 bg-[var(--color-wp-green)]/10' : 'border-[var(--color-wp-yellow)]/20 bg-[var(--color-wp-yellow)]/10'; ?>">
 									<div class="flex">
 										<div class="flex-shrink-0">
 											<?php if ($is_license_active): ?>
-												<svg class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+												<svg class="h-5 w-5 text-[var(--color-wp-green)]" viewBox="0 0 20 20" fill="currentColor">
 													<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
 												</svg>
 											<?php else: ?>
-												<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+												<svg class="h-5 w-5 text-[var(--color-wp-yellow)]" viewBox="0 0 20 20" fill="currentColor">
 													<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
 												</svg>
 											<?php endif; ?>
 										</div>
 										<div class="ml-3">
-											<h3 class="text-sm font-medium <?php echo $is_license_active ? 'text-green-800' : 'text-yellow-800'; ?>">
-												License Status: <?php echo ucfirst(esc_html($license_status)); ?>
+											<h3 class="text-sm font-medium <?php echo $is_license_active ? 'text-[var(--color-wp-green)]' : 'text-[var(--color-wp-yellow)]'; ?>">
+												License Status: <?php echo esc_html(ucfirst($license_status)); ?>
 											</h3>
-											<div class="mt-2 text-sm <?php echo $is_license_active ? 'text-green-700' : 'text-yellow-700'; ?>">
+											<div class="mt-2 text-sm <?php echo $is_license_active ? 'text-[var(--color-wp-green)]' : 'text-[var(--color-wp-yellow)]'; ?>">
 												<p>
 													<?php if ($is_license_active): ?>
 														Your license is active. Support is <?php echo $is_support_active ? 'active' : 'expired'; ?>.
@@ -352,16 +339,16 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 									</div>
 								</div>
 
-								<div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+								<div class="bg-[var(--color-wp-yellow)]/10 border border-[var(--color-wp-yellow)]/20 rounded-md p-4">
 									<div class="flex">
 										<div class="flex-shrink-0">
-											<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+											<svg class="h-5 w-5 text-[var(--color-wp-yellow)]" viewBox="0 0 20 20" fill="currentColor">
 												<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 01-1-1v-4a1 1 0 112 0v4a1 1 0 01-1 1z" clip-rule="evenodd"></path>
 											</svg>
 										</div>
 										<div class="ml-3">
-											<h3 class="text-sm font-medium text-yellow-800">Localhost Detection Method</h3>
-											<div class="mt-2 text-sm text-yellow-700">
+											<h3 class="text-sm font-medium text-[var(--color-wp-yellow)]">Localhost Detection Method</h3>
+											<div class="mt-2 text-sm text-[var(--color-wp-yellow)]">
 												<p>The system considers a site to be running on localhost if any of these conditions are met:</p>
 												<ol class="list-decimal list-inside mt-1 ml-2">
 													<li>The server name matches one of the localhost hostnames</li>
@@ -403,48 +390,41 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 												<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($config->get_company_website_url()); ?></td>
 												<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($config->get_company_website_url()); ?></td>
 											</tr>
-											<tr class="border-b border-gray-100">
-												<td class="py-3 px-4 font-medium text-gray-700">API Base URL</td>
-												<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php $base_urls = $config->get_api_base_urls(); echo esc_html($base_urls[0]); ?></td>
-												<td class="py-3 px-4 text-gray-600 font-mono text-sm <?php echo $is_dev ? 'text-yellow-600' : ''; ?>">
-													<?php echo $is_dev ? esc_html($config->get_dev_api_base_url()) : esc_html($base_urls[0]); ?>
-												</td>
-											</tr>
-											<tr class="border-b border-gray-100">
-												<td class="py-3 px-4 font-medium text-gray-700">License Verification</td>
-												<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($config->get_verification_production_url()); ?></td>
-												<td class="py-3 px-4 text-gray-600 font-mono text-sm <?php echo $is_dev ? 'text-yellow-600' : ''; ?>">
-													<?php echo $is_dev ? esc_html($config->get_dev_verification_url()) : esc_html($config->get_verification_production_url()); ?>
-												</td>
-											</tr>
-											<tr class="border-b border-gray-100">
-												<td class="py-3 px-4 font-medium text-gray-700">License Server API</td>
-												<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($config->get_license_server_api_url()); ?></td>
-												<td class="py-3 px-4 text-gray-600 font-mono text-sm <?php echo $is_dev ? 'text-yellow-600' : ''; ?>">
-													<?php echo $is_dev ? esc_html($config->get_dev_license_server_url()) : esc_html($config->get_license_server_api_url()); ?>
-												</td>
-											</tr>
+						<tr class="border-b border-gray-100">
+							<td class="py-3 px-4 font-medium text-gray-700">API Base URL</td>
+							<?php $base_urls = $config->get_api_base_urls(); ?>
+							<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($base_urls[0] ?? ''); ?></td>
+							<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($base_urls[0] ?? ''); ?></td>
+						</tr>
+						<tr class="border-b border-gray-100">
+							<td class="py-3 px-4 font-medium text-gray-700">License Verification</td>
+							<?php $verification_urls = $config->get_verification_urls(); ?>
+							<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($verification_urls[0] ?? ''); ?></td>
+							<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($verification_urls[0] ?? ''); ?></td>
+						</tr>
+						<tr class="border-b border-gray-100">
+							<td class="py-3 px-4 font-medium text-gray-700">License Server API</td>
+							<?php $license_server_urls = $config->get_license_server_urls(); ?>
+							<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($license_server_urls[0] ?? ''); ?></td>
+							<td class="py-3 px-4 text-gray-600 font-mono text-sm"><?php echo esc_html($license_server_urls[0] ?? ''); ?></td>
+						</tr>
 										</tbody>
 									</table>
 								</div>
 
-								<div class="mt-4 p-4 <?php echo $is_dev ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200'; ?> rounded-lg border">
+					<div class="mt-4 p-4 bg-[var(--color-wp-blue)]/10 border-[var(--color-wp-blue)]/20 rounded-lg border">
 									<div class="flex">
 										<div class="flex-shrink-0">
-											<svg class="h-5 w-5 <?php echo $is_dev ? 'text-yellow-400' : 'text-blue-400'; ?>" viewBox="0 0 20 20" fill="currentColor">
+								<svg class="h-5 w-5 text-[var(--color-wp-blue)]" viewBox="0 0 20 20" fill="currentColor">
 												<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 01-1-1v-4a1 1 0 112 0v4a1 1 0 01-1 1z" clip-rule="evenodd" />
 											</svg>
 										</div>
 										<div class="ml-3">
-											<h3 class="text-sm font-medium <?php echo $is_dev ? 'text-yellow-800' : 'text-blue-800'; ?>">
-												<?php echo $is_dev ? 'Development Mode Active' : 'Production Mode Active'; ?>
-											</h3>
-											<div class="mt-2 text-sm <?php echo $is_dev ? 'text-yellow-700' : 'text-blue-700'; ?>">
-												<?php if ($is_dev): ?>
-													<p>Development mode is enabled (WP_GBT_DEV_ENV = true). Using local development endpoints for all API calls.</p>
-												<?php else: ?>
-													<p>Production mode is enabled (WP_GBT_DEV_ENV = false). Using live API endpoints for all requests.</p>
-												<?php endif; ?>
+								<h3 class="text-sm font-medium text-[var(--color-wp-blue)]">
+									Production Endpoints Active
+								</h3>
+								<div class="mt-2 text-sm text-[var(--color-wp-blue)]">
+									<p>All API requests use live GetBowtied endpoints. No development overrides are active.</p>
 											</div>
 										</div>
 									</div>
@@ -467,16 +447,12 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 								
 								<?php
 								// Execute request using the same logic as the license manager
+								// nosemgrep: generic-api-key -- Placeholder for diagnostics API test, not a real secret.
 								$license_key = '6646352a-4e78-4669-b7c0-736b41198171';
 								
-								// Get all URLs to test (primary + fallback)
-								if ($is_dev) {
-									$urls_to_test = [$config->get_dev_verification_url()];
-									$environment = 'Development';
-								} else {
-									$urls_to_test = $config->get_verification_urls();
-									$environment = 'Production';
-								}
+					// Get all URLs to test (primary + fallback)
+					$urls_to_test = $config->get_verification_urls();
+					$environment = 'Production';
 								
 								$request_args = [
 									'body' => [
@@ -543,9 +519,9 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 								?>
 								
 								<div class="mb-6">
-									<div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-										<h5 class="text-sm font-medium text-blue-800 mb-2">Environment & Fallback Logic</h5>
-										<div class="text-sm text-blue-700">
+									<div class="bg-[var(--color-wp-blue)]/10 p-4 rounded-lg border border-[var(--color-wp-blue)]/20">
+										<h5 class="text-sm font-medium text-[var(--color-wp-blue)] mb-2">Environment & Fallback Logic</h5>
+										<div class="text-sm text-[var(--color-wp-blue)]">
 											<p><strong>Environment:</strong> <?php echo esc_html($environment); ?></p>
 											<p><strong>URLs to test:</strong> <?php echo count($urls_to_test); ?></p>
 											<p><strong>Logic:</strong> Try each URL in order until one returns valid JSON, then stop.</p>
@@ -560,16 +536,16 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 
 								<div class="mb-6 space-y-4">
 									<?php foreach ($url_results as $result): ?>
-									<div class="bg-gray-50 p-4 rounded-lg border <?php echo $result['used_by_system'] ? 'border-green-500 bg-green-50' : 'border-gray-200'; ?>">
+									<div class="bg-gray-50 p-4 rounded-lg border <?php echo $result['used_by_system'] ? 'border-[var(--color-wp-green)] bg-[var(--color-wp-green)]/10' : 'border-gray-200'; ?>">
 										<div class="flex items-center justify-between mb-2">
 											<h5 class="text-sm font-medium text-gray-800">
-												URL #<?php echo $result['index']; ?>
+												URL #<?php echo esc_html($result['index']); ?>
 												<?php if ($result['used_by_system']): ?>
-													<span class="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded">✅ Used by System</span>
+													<span class="ml-2 px-2 py-1 text-xs bg-[var(--color-wp-green)]/20 text-[var(--color-wp-green)] rounded">✅ Used by System</span>
 												<?php elseif ($result['is_valid_json']): ?>
-													<span class="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">⚠️ Valid but not used</span>
+													<span class="ml-2 px-2 py-1 text-xs bg-[var(--color-wp-yellow)]/20 text-[var(--color-wp-yellow)] rounded">⚠️ Valid but not used</span>
 												<?php else: ?>
-													<span class="ml-2 px-2 py-1 text-xs bg-red-100 text-red-700 rounded">❌ Failed/Invalid</span>
+													<span class="ml-2 px-2 py-1 text-xs bg-[var(--color-wp-red)]/20 text-[var(--color-wp-red)] rounded">❌ Failed/Invalid</span>
 												<?php endif; ?>
 											</h5>
 											<span class="text-xs text-gray-500"><?php echo number_format($result['time'], 4); ?>s</span>
@@ -580,21 +556,21 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 										</div>
 										
 										<?php if ($result['is_error']): ?>
-											<div class="bg-red-100 p-3 rounded">
-												<div class="text-red-800 text-sm font-medium">WordPress Error:</div>
-												<div class="text-red-700 text-xs font-mono mt-1"><?php echo esc_html($result['error_message']); ?></div>
+											<div class="bg-[var(--color-wp-red)]/20 p-3 rounded">
+												<div class="text-[var(--color-wp-red)] text-sm font-medium">WordPress Error:</div>
+												<div class="text-[var(--color-wp-red)] text-xs font-mono mt-1"><?php echo esc_html($result['error_message']); ?></div>
 											</div>
 										<?php else: ?>
 											<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 												<div class="bg-gray-100 p-3 rounded">
 													<div class="text-gray-700 text-xs font-medium mb-1">Response Code:</div>
-													<div class="text-xs font-mono <?php echo ($result['response_code'] >= 200 && $result['response_code'] < 300) ? 'text-green-600' : 'text-red-600'; ?>">
+													<div class="text-xs font-mono <?php echo ($result['response_code'] >= 200 && $result['response_code'] < 300) ? 'text-[var(--color-wp-green)]' : 'text-[var(--color-wp-red)]'; ?>">
 														HTTP <?php echo esc_html($result['response_code']); ?>
 													</div>
 												</div>
 												<div class="bg-gray-100 p-3 rounded">
 													<div class="text-gray-700 text-xs font-medium mb-1">JSON Valid:</div>
-													<div class="text-xs font-mono <?php echo $result['is_valid_json'] ? 'text-green-600' : 'text-red-600'; ?>">
+													<div class="text-xs font-mono <?php echo $result['is_valid_json'] ? 'text-[var(--color-wp-green)]' : 'text-[var(--color-wp-red)]'; ?>">
 														<?php echo $result['is_valid_json'] ? '✅ Yes' : '❌ No'; ?>
 													</div>
 												</div>
@@ -695,9 +671,9 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 								
 								<h4 class="text-base font-medium text-gray-800 mb-4">Price Comparison & Sale Detection</h4>
 								
-								<div class="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
-									<h5 class="text-sm font-medium text-blue-800 mb-2">How Sale Detection Works</h5>
-									<div class="text-sm text-blue-700">
+								<div class="mb-6 bg-[var(--color-wp-blue)]/10 p-4 rounded-lg border border-[var(--color-wp-blue)]/20">
+									<h5 class="text-sm font-medium text-[var(--color-wp-blue)] mb-2">How Sale Detection Works</h5>
+									<div class="text-sm text-[var(--color-wp-blue)]">
 										<p><strong>Logic:</strong> A sale is detected when the live API price is lower than the default config price.</p>
 										<p><strong>Formula:</strong> <code>is_sale = live_price &lt; default_price</code></p>
 										<p><strong>Last Updated:</strong> <?php echo esc_html($price_last_verified_display); ?></p>
@@ -722,7 +698,7 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 												<td class="py-3 px-4 text-gray-600 font-mono text-sm">$<?php echo number_format($price_data['regular_license_price'], 0); ?></td>
 												<td class="py-3 px-4">
 													<?php if ($regular_license_is_sale): ?>
-														<span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded font-medium">🔥 ON SALE</span>
+														<span class="px-2 py-1 text-xs bg-[var(--color-wp-red)]/20 text-[var(--color-wp-red)] rounded font-medium">🔥 ON SALE</span>
 													<?php else: ?>
 														<span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">No sale</span>
 													<?php endif; ?>
@@ -732,7 +708,7 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 													$regular_diff = $price_data['regular_license_price'] - $theme_default_price_regular_license;
 													$regular_diff_percent = $theme_default_price_regular_license > 0 ? ($regular_diff / $theme_default_price_regular_license) * 100 : 0;
 													?>
-													<span class="<?php echo $regular_diff < 0 ? 'text-red-600' : ($regular_diff > 0 ? 'text-green-600' : 'text-gray-600'); ?>">
+													<span class="<?php echo $regular_diff < 0 ? 'text-[var(--color-wp-red)]' : ($regular_diff > 0 ? 'text-[var(--color-wp-green)]' : 'text-gray-600'); ?>">
 														<?php echo $regular_diff > 0 ? '+' : ''; ?>$<?php echo number_format($regular_diff, 0); ?>
 														<?php if ($regular_diff != 0): ?>
 															(<?php echo $regular_diff > 0 ? '+' : ''; ?><?php echo number_format($regular_diff_percent, 1); ?>%)
@@ -746,7 +722,7 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 												<td class="py-3 px-4 text-gray-600 font-mono text-sm">$<?php echo number_format($price_data['extended_license_price'], 0); ?></td>
 												<td class="py-3 px-4">
 													<?php if ($extended_license_is_sale): ?>
-														<span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded font-medium">🔥 ON SALE</span>
+														<span class="px-2 py-1 text-xs bg-[var(--color-wp-red)]/20 text-[var(--color-wp-red)] rounded font-medium">🔥 ON SALE</span>
 													<?php else: ?>
 														<span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">No sale</span>
 													<?php endif; ?>
@@ -756,7 +732,7 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 													$extended_diff = $price_data['extended_license_price'] - $theme_default_price_extended_license;
 													$extended_diff_percent = $theme_default_price_extended_license > 0 ? ($extended_diff / $theme_default_price_extended_license) * 100 : 0;
 													?>
-													<span class="<?php echo $extended_diff < 0 ? 'text-red-600' : ($extended_diff > 0 ? 'text-green-600' : 'text-gray-600'); ?>">
+													<span class="<?php echo $extended_diff < 0 ? 'text-[var(--color-wp-red)]' : ($extended_diff > 0 ? 'text-[var(--color-wp-green)]' : 'text-gray-600'); ?>">
 														<?php echo $extended_diff > 0 ? '+' : ''; ?>$<?php echo number_format($extended_diff, 0); ?>
 														<?php if ($extended_diff != 0): ?>
 															(<?php echo $extended_diff > 0 ? '+' : ''; ?><?php echo number_format($extended_diff_percent, 1); ?>%)
@@ -770,7 +746,7 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 												<td class="py-3 px-4 text-gray-600 font-mono text-sm">$<?php echo number_format($live_professional_price, 0); ?></td>
 												<td class="py-3 px-4">
 													<?php if ($professional_license_is_sale): ?>
-														<span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded font-medium">🔥 ON SALE</span>
+														<span class="px-2 py-1 text-xs bg-[var(--color-wp-red)]/20 text-[var(--color-wp-red)] rounded font-medium">🔥 ON SALE</span>
 													<?php else: ?>
 														<span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">No sale</span>
 													<?php endif; ?>
@@ -780,7 +756,7 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 													$professional_diff = $live_professional_price - $default_professional_price;
 													$professional_diff_percent = $default_professional_price > 0 ? ($professional_diff / $default_professional_price) * 100 : 0;
 													?>
-													<span class="<?php echo $professional_diff < 0 ? 'text-red-600' : ($professional_diff > 0 ? 'text-green-600' : 'text-gray-600'); ?>">
+													<span class="<?php echo $professional_diff < 0 ? 'text-[var(--color-wp-red)]' : ($professional_diff > 0 ? 'text-[var(--color-wp-green)]' : 'text-gray-600'); ?>">
 														<?php echo $professional_diff > 0 ? '+' : ''; ?>$<?php echo number_format($professional_diff, 2); ?>
 														<?php if ($professional_diff != 0): ?>
 															(<?php echo $professional_diff > 0 ? '+' : ''; ?><?php echo number_format($professional_diff_percent, 1); ?>%)
@@ -799,7 +775,7 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 										<p><strong>Professional Price Formula:</strong> <code>ceil((($regular_price - 12) * (1 - 0.125)) * 100) / 100</code></p>
 										<p><strong>Professional Sale Logic:</strong> Professional upgrade follows regular license sale status</p>
 										<?php if ($regular_license_is_sale || $extended_license_is_sale): ?>
-										<p class="text-red-600 font-medium">✨ Sales are currently active and will be displayed on the License page!</p>
+										<p class="text-[var(--color-wp-red)] font-medium">✨ Sales are currently active and will be displayed on the License page!</p>
 										<?php else: ?>
 										<p class="text-gray-600">💡 No sales detected - prices match default configuration values</p>
 										<?php endif; ?>
@@ -823,12 +799,11 @@ if (!function_exists('getbowtied_diagnostics_content')) {
 								
 								<?php
 								// Execute request using wp_remote_post for update_theme_price
-								$license_key = '4a50fd1a-05b0-4b58-acc0-e9d6b6e1d77f';
+								// nosemgrep: generic-api-key -- Placeholder for diagnostics API test, not a real secret.
+								$license_key = '6646352a-4e78-4669-b7c0-736b41198171';
 								
-								// Get the base API URL
-								$api_base_url = $is_dev 
-									? $config->get_dev_api_base_url() 
-									: $config->get_api_base_urls()[0];
+					// Get the base API URL
+					$api_base_url = $config->get_api_base_urls()[0];
 								
 								// Make sure the base URL ends with a slash
 								$api_base_url = rtrim($api_base_url, '/') . '/';
@@ -914,17 +889,17 @@ theme_name=<?php echo esc_html($theme_name_gbt_dash); ?></pre>
 									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
 										<h5 class="text-sm font-medium text-gray-800 mb-2">Price Update URL</h5>
 										<div class="bg-gray-100 p-3 rounded font-mono text-xs">
-											<span class="<?php echo $is_dev ? 'text-yellow-600' : 'text-blue-600'; ?>">
+						<span class="text-[var(--color-wp-blue)]">
 												<?php echo esc_html($price_update_url); ?>
-												<?php echo $is_dev ? ' (Development)' : ' (Production)'; ?>
+							 (Production)
 											</span>
 										</div>
 									</div>
 									
 									<?php if ($is_error): ?>
-									<div class="bg-red-50 p-4 rounded-lg border border-red-200">
-										<h5 class="text-sm font-medium text-red-800 mb-2">WordPress Error</h5>
-										<div class="bg-red-100 p-3 rounded font-mono text-xs text-red-800">
+									<div class="bg-[var(--color-wp-red)]/10 p-4 rounded-lg border border-[var(--color-wp-red)]/20">
+										<h5 class="text-sm font-medium text-[var(--color-wp-red)] mb-2">WordPress Error</h5>
+										<div class="bg-[var(--color-wp-red)]/20 p-3 rounded font-mono text-xs text-[var(--color-wp-red)]">
 											<pre><?php echo esc_html($error_message); ?></pre>
 										</div>
 									</div>
@@ -932,7 +907,7 @@ theme_name=<?php echo esc_html($theme_name_gbt_dash); ?></pre>
 									<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
 										<h5 class="text-sm font-medium text-gray-800 mb-2">Response Status</h5>
 										<div class="bg-gray-100 p-3 rounded font-mono text-xs">
-											<span class="<?php echo ($response_code >= 200 && $response_code < 300) ? 'text-green-600' : 'text-red-600'; ?>">
+											<span class="<?php echo ($response_code >= 200 && $response_code < 300) ? 'text-[var(--color-wp-green)]' : 'text-[var(--color-wp-red)]'; ?>">
 												HTTP/1.1 <?php echo esc_html($response_code); ?>
 											</span>
 											<p class="mt-1">Total time: <?php echo number_format($total_time, 4); ?> seconds</p>

@@ -34,13 +34,20 @@ function sk_banner_shortcode($params = array(), $content = null) {
 	
 	$content = do_shortcode($content);
 
-	if ($new_tab == 'true')
-	{
-		$link_tab = 'onclick="window.open(\''.$link_url.'\', \'_blank\');"';
-	}
-	else 
-	{
-		$link_tab = 'onclick="location.href=\''.$link_url.'\';"';
+	$link_tab = '';
+
+	if ( ! empty( $link_url ) ) {
+		$link_url   = esc_url_raw( $link_url );
+		$link_value = esc_js( $link_url );
+
+		if ($new_tab == 'true')
+		{
+			$link_tab = 'onclick="window.open(\''.$link_value.'\', \'_blank\');"';
+		}
+		else 
+		{
+			$link_tab = 'onclick="location.href=\''.$link_value.'\';"';
+		}
 	}
 	
 	$banner_simple_height = '

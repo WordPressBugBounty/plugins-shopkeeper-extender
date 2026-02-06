@@ -43,7 +43,7 @@ class GBT_License_Server_Connector
 	 */
 	private function __construct()
 	{
-		// Set the server API URL based on environment
+		// Set the server API URL
 		$this->server_api_url = $this->get_api_url();
 
 		// Add hooks to trigger license server sync after license verification
@@ -54,31 +54,15 @@ class GBT_License_Server_Connector
 	}
 
 	/**
-	 * Determine the server API URL based on environment
+	 * Determine the server API URL
 	 *
 	 * @return string The server API URL
 	 */
 	private function get_api_url(): string
 	{
-		if ($this->is_development_environment()) {
-			$config = GBT_License_Config::get_instance();
-			return $config->get_dev_license_server_url();
-		}
-
-		// Use remote URL for production
 		$config = GBT_License_Config::get_instance();
-		return $config->get_license_server_api_url();
-	}
-
-	/**
-	 * Check if this is a development environment
-	 *
-	 * @return bool Whether this is a development environment
-	 */
-	public function is_development_environment(): bool
-	{
-		$config = GBT_License_Config::get_instance();
-		return $config->is_dev_mode_enabled();
+		$urls = $config->get_license_server_urls();
+		return $urls[0] ?? '';
 	}
 
 	/**
@@ -253,13 +237,8 @@ class GBT_License_Server_Connector
 	private function send_api_request(array $post_data)
 	{
 		// Get URLs from config
-		if ($this->is_development_environment()) {
-			$config = GBT_License_Config::get_instance();
-			$urls = [$config->get_dev_license_server_url()];
-		} else {
-			$config = GBT_License_Config::get_instance();
-			$urls = $config->get_license_server_urls();
-		}
+		$config = GBT_License_Config::get_instance();
+		$urls = $config->get_license_server_urls();
 
 		// Log the request data
 		$this->log_debug('Trying license server URLs: ' . implode(', ', $urls));
@@ -268,7 +247,7 @@ class GBT_License_Server_Connector
 		$request_args = [
 			'body' => $post_data,
 			'timeout' => 30,
-			'sslverify' => !$this->is_development_environment(),
+			'sslverify' => true,
 			'headers' => [
 				'X-Requested-With' => 'XMLHttpRequest',
 				'Referer' => home_url(),
@@ -378,7 +357,7 @@ class GBT_License_Server_Connector
 	private function get_site_domain(): string
 	{
 		$domain = parse_url(home_url(), PHP_URL_HOST);
-		return $domain ?: $_SERVER['HTTP_HOST'] ?? 'unknown';
+		return $domain ?: ( isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : 'unknown' );
 	}
 
 	/**
@@ -389,6 +368,7 @@ class GBT_License_Server_Connector
 	private function log_debug(string $message): void
 	{
 		if (defined('WP_DEBUG') && WP_DEBUG) {
+			// phpcs:ignore QITStandard.PHP.DebugCode.DebugFunctionFound -- Legitimate debug logging when WP_DEBUG is enabled.
 			error_log('[GBT License Server] ' . $message);
 		}
 	}
@@ -401,6 +381,7 @@ class GBT_License_Server_Connector
 	private function log_error(string $message): void
 	{
 		if (defined('WP_DEBUG') && WP_DEBUG) {
+			// phpcs:ignore QITStandard.PHP.DebugCode.DebugFunctionFound -- Legitimate debug logging when WP_DEBUG is enabled.
 			error_log('[GBT License Server Error] ' . $message);
 		}
 	}
@@ -413,6 +394,7 @@ class GBT_License_Server_Connector
 	private function log_response($response): void
 	{
 		if (defined('WP_DEBUG') && WP_DEBUG && $response) {
+			// phpcs:ignore QITStandard.PHP.DebugCode.DebugFunctionFound -- Legitimate debug logging when WP_DEBUG is enabled.
 			error_log('[GBT License Server] API Response: ' . json_encode($response));
 		}
 	}

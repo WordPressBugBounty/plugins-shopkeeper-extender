@@ -69,12 +69,30 @@ class GBT_License_Manager
 
 		// Get verification interval from config
 		$config = GBT_License_Config::get_instance();
-		$interval_days = 30;
+		$interval_days = 10;
 		$interval_seconds = $interval_days * DAY_IN_SECONDS;
 
 		// Only proceed if it's been at least the configured interval since the last check
 		if ($current_time - $last_run >= $interval_seconds) {
+			// Check if another process is already running (lock mechanism)
+			$lock_key = 'gbt_license_check_lock';
+			$lock_value = get_transient($lock_key);
+			
+			if ($lock_value !== false) {
+				return null; // Another process is running, skip this check
+			}
+			
+			// Set lock for 60 seconds
+			set_transient($lock_key, time(), 60);
+			
 			$result = $this->cron_process_license();
+			
+			// Release lock
+			delete_transient($lock_key);
+
+			// Always update last_verified to prevent repeated checks, even if there's no license key
+			// This ensures the 10-day interval is respected regardless of verification result
+			update_option($this->option_keys['last_verified'], time());
 
 			// If there was no license key, just return null
 			if ($result === null) {
@@ -97,14 +115,343 @@ class GBT_License_Manager
 	{
 		$license_key = get_option($this->option_keys['license_key'], '');
 		$is_active = !empty($license_key);
+		$license_info = get_option($this->option_keys['info'], []);
+		$support_expiration_date = get_option($this->option_keys['support_expiration'], '');
+
+		// Get both Envato and special license support dates
+		$support_dates = $this->get_support_expiration_dates($license_key, $license_info, $support_expiration_date);
 
 		return [
 			'license_key' => $license_key,
 			'theme_id' => get_option($this->option_keys['theme_id'], ''),
 			'license_status' => $is_active ? 'active' : 'inactive',
-			'license_info' => get_option($this->option_keys['info'], []),
-			'support_expiration_date' => get_option($this->option_keys['support_expiration'], '')
+			'license_info' => $license_info,
+			'support_expiration_date' => $support_expiration_date,
+			'envato_support_expiration' => $support_dates['envato_support_expiration'],
+			'bonus_updates_expiration' => $support_dates['bonus_updates_expiration'],
+			'has_bonus_updates' => $support_dates['has_bonus_updates'],
+			'envato_support_expired' => $support_dates['envato_support_expired'],
+			'bonus_updates_expired' => $support_dates['bonus_updates_expired']
 		];
+	}
+
+	/**
+	 * Get both Envato and special license support expiration dates
+	 *
+	 * @param string $license_key The license key
+	 * @param array $license_info The license info
+	 * @param string|int $stored_support_expiration The stored support expiration date
+	 * @return array Array with envato, special, has_special, envato_support_expired, and special_support_expired keys
+	 */
+	private function get_support_expiration_dates(string $license_key, array $license_info, $stored_support_expiration): array
+	{
+		// Get Envato support expiration date
+		$envato_support_expiration = isset($license_info['supported_until']) ? $license_info['supported_until'] : '';
+		
+		// Check if Envato support is expired
+		$envato_support_expired = false;
+		if (!empty($envato_support_expiration)) {
+			$envato_timestamp = strtotime($envato_support_expiration);
+			$envato_support_expired = ($envato_timestamp && time() > $envato_timestamp);
+		}
+		
+		// Get bonus updates date if available
+		// Skip special benefits if buyer has low star reviews
+		$bonus_updates_expiration = '';
+		$has_bonus_updates = false;
+		$bonus_updates_expired = false;
+		
+		// Check if buyer has low star reviews - if so, ignore special benefits
+        // Disable special benefits if buyer has low-star reviews or no rating
+        $should_disable_special = false;
+        if (!empty($license_key) && class_exists('GBT_Buyer_Review_Checker')) {
+            $review_checker = GBT_Buyer_Review_Checker::get_instance();
+            $should_disable_special = $review_checker->should_disable_special_benefits($license_key);
+        }
+        
+        if (!empty($license_key) && !$should_disable_special && class_exists('GBT_Special_License_Manager')) {
+			$special_license_manager = GBT_Special_License_Manager::get_instance();
+			$special_license_data = $special_license_manager->get_special_license_data($license_key);
+			
+			if ($special_license_data && 
+				isset($special_license_data['data']['bonus_updates']['until_date']) && 
+				!empty($special_license_data['data']['bonus_updates']['until_date'])) {
+				
+				$bonus_updates_date = $special_license_data['data']['bonus_updates']['until_date'];
+				$bonus_timestamp = is_numeric($bonus_updates_date) ? 
+					(int)$bonus_updates_date : 
+					strtotime($bonus_updates_date);
+				
+				// Only show bonus license if it's valid AND greater than Envato date
+				if ($bonus_timestamp !== false) {
+					$envato_timestamp = strtotime($envato_support_expiration);
+					
+					if ($bonus_timestamp > $envato_timestamp) {
+						$bonus_updates_expiration = date_i18n(get_option('date_format'), $bonus_timestamp);
+						$has_bonus_updates = true;
+						
+						// Check if bonus updates is expired
+						$bonus_updates_expired = (time() > $bonus_timestamp);
+					}
+				}
+			}
+		}
+
+		return [
+			'envato_support_expiration' => $envato_support_expiration,
+			'bonus_updates_expiration' => $bonus_updates_expiration,
+			'has_bonus_updates' => $has_bonus_updates,
+			'envato_support_expired' => $envato_support_expired,
+			'bonus_updates_expired' => $bonus_updates_expired
+		];
+	}
+
+	/**
+	 * Check if Envato support is expired (ignoring special license extensions)
+	 *
+	 * @return bool Whether the original Envato support has expired
+	 */
+	public function is_envato_support_expired(): bool
+	{
+		$license_data = $this->get_license_data();
+		return $license_data['envato_support_expired'] ?? false;
+	}
+
+	/**
+	 * Check if special license support is expired
+	 *
+	 * @return bool Whether the special license support has expired
+	 */
+	public function is_special_support_expired(): bool
+	{
+		$license_data = $this->get_license_data();
+		return $license_data['special_support_expired'] ?? false;
+	}
+
+	/**
+	 * Check if technical support is active (based on Envato expiration and built_in_support_until)
+	 *
+	 * @return bool True if technical support is available
+	 */
+	public function is_technical_support_active(): bool
+	{
+		$license_key = get_option($this->option_keys['license_key'], '');
+		
+		if (empty($license_key)) {
+			return false;
+		}
+
+		$license_info = get_option($this->option_keys['info'], []);
+		$envato_support_expiration = isset($license_info['supported_until']) ? $license_info['supported_until'] : '';
+		
+		// Check if Envato support is expired
+		$envato_support_expired = false;
+		if (!empty($envato_support_expiration)) {
+			$envato_timestamp = strtotime($envato_support_expiration);
+			$envato_support_expired = ($envato_timestamp && time() > $envato_timestamp);
+		}
+
+		// If Envato support is still active, technical support is available
+		if (!$envato_support_expired) {
+			return true;
+		}
+
+		// If Envato support is expired, check for bonus license bonus_support_until
+		// Skip special benefits if buyer has low star reviews
+        // Disable special benefits if buyer has low-star reviews or no rating
+        $should_disable_special = false;
+        if (class_exists('GBT_Buyer_Review_Checker')) {
+            $review_checker = GBT_Buyer_Review_Checker::get_instance();
+            $should_disable_special = $review_checker->should_disable_special_benefits($license_key);
+        }
+        
+        if (!$should_disable_special && class_exists('GBT_Special_License_Manager')) {
+			$special_license_manager = GBT_Special_License_Manager::get_instance();
+			$special_license_data = $special_license_manager->get_special_license_data($license_key);
+			
+			if ($special_license_data && 
+				isset($special_license_data['data']['bonus_support']['until_date']) && 
+				!empty($special_license_data['data']['bonus_support']['until_date'])) {
+				
+				$bonus_support_date = $special_license_data['data']['bonus_support']['until_date'];
+				$bonus_support_timestamp = is_numeric($bonus_support_date) ? 
+					(int)$bonus_support_date : 
+					strtotime($bonus_support_date);
+				
+				// Technical support is active if bonus_support is not expired AND greater than Envato date
+				if ($bonus_support_timestamp !== false) {
+					$envato_timestamp = strtotime($envato_support_expiration);
+					
+					// Only use bonus license if it's valid AND greater than Envato date
+					if ($bonus_support_timestamp > $envato_timestamp && time() <= $bonus_support_timestamp) {
+						return true;
+					}
+				}
+			}
+		}
+
+		// No active support found
+		return false;
+	}
+
+	/**
+	 * Check if technical support is expired (based on Envato expiration and built_in_support_until)
+	 *
+	 * @return bool True if technical support is expired
+	 */
+	public function is_technical_support_expired(): bool
+	{
+		return !$this->is_technical_support_active();
+	}
+
+	/**
+	 * Get the built-in updates expiration date
+	 *
+	 * @return string Formatted built-in updates expiration date
+	 */
+	public function get_built_in_updates_until_date(): string
+	{
+		$license_key = get_option($this->option_keys['license_key'], '');
+		
+		if (empty($license_key)) {
+			return '';
+		}
+
+		$license_info = get_option($this->option_keys['info'], []);
+		$envato_support_expiration = isset($license_info['supported_until']) ? $license_info['supported_until'] : '';
+		
+		// Check if Envato support is expired
+		$envato_support_expired = false;
+		if (!empty($envato_support_expiration)) {
+			$envato_timestamp = strtotime($envato_support_expiration);
+			$envato_support_expired = ($envato_timestamp && time() > $envato_timestamp);
+		}
+
+		// If Envato support is still active, return Envato date
+		if (!$envato_support_expired) {
+			if (!empty($envato_support_expiration)) {
+				$timestamp = strtotime($envato_support_expiration);
+				return $timestamp ? date_i18n(get_option('date_format'), $timestamp) : $envato_support_expiration;
+			}
+			return '';
+		}
+
+		// If Envato support is expired, check for bonus license bonus_updates_until
+		// Skip special benefits if buyer has low star reviews
+        // Disable special benefits if buyer has low-star reviews or no rating
+        $should_disable_special = false;
+        if (class_exists('GBT_Buyer_Review_Checker')) {
+            $review_checker = GBT_Buyer_Review_Checker::get_instance();
+            $should_disable_special = $review_checker->should_disable_special_benefits($license_key);
+        }
+        
+        if (!$should_disable_special && class_exists('GBT_Special_License_Manager')) {
+			$special_license_manager = GBT_Special_License_Manager::get_instance();
+			$special_license_data = $special_license_manager->get_special_license_data($license_key);
+			
+			if ($special_license_data && 
+				isset($special_license_data['data']['bonus_updates']['until_date']) && 
+				!empty($special_license_data['data']['bonus_updates']['until_date'])) {
+				
+				$bonus_updates_date = $special_license_data['data']['bonus_updates']['until_date'];
+				$bonus_updates_timestamp = is_numeric($bonus_updates_date) ? 
+					(int)$bonus_updates_date : 
+					strtotime($bonus_updates_date);
+				
+				// Return bonus updates date if it's valid AND greater than Envato date
+				if ($bonus_updates_timestamp !== false) {
+					$envato_timestamp = strtotime($envato_support_expiration);
+					
+					// Only use bonus license if it's valid AND greater than Envato date
+					if ($bonus_updates_timestamp > $envato_timestamp) {
+						return date_i18n(get_option('date_format'), $bonus_updates_timestamp);
+					}
+				}
+			}
+		}
+
+		// Return Envato date (either no bonus license, or bonus license date is not better)
+		if (!empty($envato_support_expiration)) {
+			$timestamp = strtotime($envato_support_expiration);
+			return $timestamp ? date_i18n(get_option('date_format'), $timestamp) : $envato_support_expiration;
+		}
+
+		return '';
+	}
+
+	/**
+	 * Get the final support expiration date that determines technical support status
+	 *
+	 * @return string Formatted support expiration date
+	 */
+	public function get_support_until_date(): string
+	{
+		$license_key = get_option($this->option_keys['license_key'], '');
+		
+		if (empty($license_key)) {
+			return '';
+		}
+
+		$license_info = get_option($this->option_keys['info'], []);
+		$envato_support_expiration = isset($license_info['supported_until']) ? $license_info['supported_until'] : '';
+		
+		// Check if Envato support is expired
+		$envato_support_expired = false;
+		if (!empty($envato_support_expiration)) {
+			$envato_timestamp = strtotime($envato_support_expiration);
+			$envato_support_expired = ($envato_timestamp && time() > $envato_timestamp);
+		}
+
+		// If Envato support is still active, return Envato date
+		if (!$envato_support_expired) {
+			if (!empty($envato_support_expiration)) {
+				$timestamp = strtotime($envato_support_expiration);
+				return $timestamp ? date_i18n(get_option('date_format'), $timestamp) : $envato_support_expiration;
+			}
+			return '';
+		}
+
+		// If Envato support is expired, check for bonus license bonus_support_until
+		// Skip special benefits if buyer has low star reviews
+        // Disable special benefits if buyer has low-star reviews or no rating
+        $should_disable_special = false;
+        if (class_exists('GBT_Buyer_Review_Checker')) {
+            $review_checker = GBT_Buyer_Review_Checker::get_instance();
+            $should_disable_special = $review_checker->should_disable_special_benefits($license_key);
+        }
+        
+        if (!$should_disable_special && class_exists('GBT_Special_License_Manager')) {
+			$special_license_manager = GBT_Special_License_Manager::get_instance();
+			$special_license_data = $special_license_manager->get_special_license_data($license_key);
+			
+			if ($special_license_data && 
+				isset($special_license_data['data']['bonus_support']['until_date']) && 
+				!empty($special_license_data['data']['bonus_support']['until_date'])) {
+				
+				$bonus_support_date = $special_license_data['data']['bonus_support']['until_date'];
+				$bonus_support_timestamp = is_numeric($bonus_support_date) ? 
+					(int)$bonus_support_date : 
+					strtotime($bonus_support_date);
+				
+				// Return bonus support date if it's valid AND greater than Envato date (same logic as is_technical_support_active)
+				if ($bonus_support_timestamp !== false) {
+					$envato_timestamp = strtotime($envato_support_expiration);
+					
+					// Only use bonus license if it's valid AND greater than Envato date
+					if ($bonus_support_timestamp > $envato_timestamp) {
+						return date_i18n(get_option('date_format'), $bonus_support_timestamp);
+					}
+				}
+			}
+		}
+
+		// Return Envato date (either no bonus license, or bonus license date is not better)
+		if (!empty($envato_support_expiration)) {
+			$timestamp = strtotime($envato_support_expiration);
+			return $timestamp ? date_i18n(get_option('date_format'), $timestamp) : $envato_support_expiration;
+		}
+
+		return '';
 	}
 
 	/**
@@ -317,6 +664,18 @@ class GBT_License_Manager
 			delete_option($option_name);
 		}
 
+		// Clear special license data cache
+		if (class_exists('GBT_Special_License_Manager')) {
+			$special_license_manager = GBT_Special_License_Manager::get_instance();
+			$special_license_manager->clear_special_license_data();
+		}
+
+		// Clear buyer review data cache
+		if (class_exists('GBT_Buyer_Review_Checker')) {
+			$review_checker = GBT_Buyer_Review_Checker::get_instance();
+			$review_checker->clear_review_data();
+		}
+
 		// Delete notification dismissal options
 		delete_option('getbowtied_theme_license_subscription_expired_dismissed');
 		delete_option('getbowtied_theme_license_subscription_expiring_soon_dismissed');
@@ -350,7 +709,7 @@ class GBT_License_Manager
 
 		// Add help link
 		$help_url = admin_url('admin.php?page=getbowtied-help');
-		$error_message .= sprintf(' <a href="%s" class="text-blue-600 hover:text-blue-800">Need help?</a>', esc_url($help_url));
+		$error_message .= sprintf(' <a href="%s" class="text-[var(--color-wp-blue)] hover:text-[var(--color-wp-blue-darker)]">Need help?</a>', esc_url($help_url));
 
 		return [
 			'success' => false,
@@ -490,7 +849,7 @@ class GBT_License_Manager
 	private function format_domain_restriction_error(array $server_response): array
 	{
 		// Create a custom error message for domain restriction
-		$error_message = 'This purchase code is already active on another domain. To use this license on your current domain, please deactivate it first from the original site or <a href="' . esc_url(GBT_Dashboard_Setup::init()->get_theme_config('theme_sales_page_url')) . '" target="_blank" class="text-blue-600 hover:text-blue-800">buy another license</a> for this site.';
+		$error_message = 'This purchase code is already active on another domain. To use this license on your current domain, please deactivate it first from the original site or <a href="' . esc_url(GBT_Dashboard_Setup::init()->get_theme_config('theme_sales_page_url')) . '" target="_blank" class="text-[var(--color-wp-blue)] hover:text-[var(--color-wp-blue-darker)]">buy another license</a> for this site.';
 
 		// Try to extract domain from message if available
 		if (isset($server_response['message']) && strpos($server_response['message'], 'active on') !== false) {
@@ -498,7 +857,7 @@ class GBT_License_Manager
 			if (isset($matches[1])) {
 				$active_domain = $matches[1];
 				$error_message = sprintf(
-					'This purchase code is already active on "%s". To use this license on your current domain, please deactivate it first from the original site or <a href="%s" target="_blank" class="text-blue-600 hover:text-blue-800">buy another license</a> for this site.',
+					'This purchase code is already active on "%s". To use this license on your current domain, please deactivate it first from the original site or <a href="%s" target="_blank" class="text-[var(--color-wp-blue)] hover:text-[var(--color-wp-blue-darker)]">buy another license</a> for this site.',
 					$active_domain,
 					esc_url(GBT_Dashboard_Setup::init()->get_theme_config('theme_sales_page_url'))
 				);
@@ -507,7 +866,7 @@ class GBT_License_Manager
 
 		// Add help link
 		$help_url = admin_url('admin.php?page=getbowtied-help');
-		$error_message .= sprintf(' <a href="%s" class="text-blue-600 hover:text-blue-800">Need help?</a>', esc_url($help_url));
+		$error_message .= sprintf(' <a href="%s" class="text-[var(--color-wp-blue)] hover:text-[var(--color-wp-blue-darker)]">Need help?</a>', esc_url($help_url));
 
 		return [
 			'success' => false,
@@ -545,17 +904,80 @@ class GBT_License_Manager
 	 */
 	private function store_license_data(string $license_key, string $theme_id, array $license_info, $support_expiration_date): void
 	{
-		$options_to_update = [
-			$this->option_keys['license_key'] => $license_key,
-			$this->option_keys['theme_id'] => $theme_id,
-			$this->option_keys['info'] => $license_info,
-			$this->option_keys['support_expiration'] => $support_expiration_date,
-			$this->option_keys['last_verified'] => time()
-		];
+		// Store core license details first so downstream refreshers can read the latest data
+		update_option($this->option_keys['license_key'], $license_key);
+		update_option($this->option_keys['theme_id'], $theme_id);
+		update_option($this->option_keys['info'], $license_info);
 
-		foreach ($options_to_update as $option_name => $option_value) {
-			update_option($option_name, $option_value);
+		// Refresh special license data from API and update WordPress option
+		if (class_exists('GBT_Special_License_Manager')) {
+			$special_license_manager = GBT_Special_License_Manager::get_instance();
+			$special_license_manager->refresh_special_license_data($license_key);
 		}
+
+		// Refresh buyer review data from API and update WordPress option
+		if (class_exists('GBT_Buyer_Review_Checker')) {
+			$review_checker = GBT_Buyer_Review_Checker::get_instance();
+			$review_checker->refresh_buyer_review_data($license_key);
+		}
+
+		// Check for special license support date override
+		$final_support_expiration = $this->get_final_support_expiration_date($license_key, $support_expiration_date);
+
+		// Store support expiration and last verified date
+		update_option($this->option_keys['support_expiration'], $final_support_expiration);
+		update_option($this->option_keys['last_verified'], time());
+	}
+
+	/**
+	 * Get the final support expiration date, checking for special license override
+	 *
+	 * @param string $license_key The license key
+	 * @param string|int $envato_support_expiration The original Envato support expiration date
+	 * @return string|int The final support expiration date (special license date if greater than Envato, otherwise Envato date)
+	 */
+	private function get_final_support_expiration_date(string $license_key, $envato_support_expiration)
+	{
+        // Skip special benefits if buyer has low star reviews or has no rating
+        $should_disable_special = false;
+        if (class_exists('GBT_Buyer_Review_Checker')) {
+            $review_checker = GBT_Buyer_Review_Checker::get_instance();
+            $should_disable_special = $review_checker->should_disable_special_benefits($license_key);
+        }
+        
+        // If special should be disabled, use Envato date only (ignore special benefits)
+        if ($should_disable_special) {
+			return $envato_support_expiration;
+		}
+		
+		// Check if special license manager is available
+		if (!class_exists('GBT_Special_License_Manager')) {
+			return $envato_support_expiration;
+		}
+
+		$special_license_manager = GBT_Special_License_Manager::get_instance();
+		$special_license_data = $special_license_manager->get_special_license_data($license_key);
+
+		// If bonus license data exists and has a bonus_updates_until date, compare it with Envato date
+		if ($special_license_data && 
+			isset($special_license_data['data']['bonus_updates']['until_date']) && 
+			!empty($special_license_data['data']['bonus_updates']['until_date'])) {
+			
+			$bonus_updates_date = $special_license_data['data']['bonus_updates']['until_date'];
+			
+			// Convert bonus license date to Unix timestamp if it's not already
+			$bonus_timestamp = is_numeric($bonus_updates_date) ? 
+				(int)$bonus_updates_date : 
+				strtotime($bonus_updates_date);
+
+			// Only use bonus license date if it's valid AND greater than Envato date
+			if ($bonus_timestamp !== false && $bonus_timestamp > $envato_support_expiration) {
+				return $bonus_timestamp;
+			}
+		}
+
+		// Use Envato date (either no bonus license, or bonus license date is not better)
+		return $envato_support_expiration;
 	}
 
 	/**
@@ -628,25 +1050,9 @@ class GBT_License_Manager
 	 */
 	public function get_verification_url(): string
 	{
-		if ($this->is_development_environment()) {
-			$config = GBT_License_Config::get_instance();
-			return $config->get_dev_verification_url();
-		}
-
-		// Use remote URL for production
 		$config = GBT_License_Config::get_instance();
-		return $config->get_verification_production_url();
-	}
-
-	/**
-	 * Check if this is a development environment
-	 *
-	 * @return bool Whether this is a development environment
-	 */
-	public function is_development_environment(): bool
-	{
-		$config = GBT_License_Config::get_instance();
-		return $config->is_dev_mode_enabled();
+		$urls = $config->get_verification_urls();
+		return $urls[0] ?? '';
 	}
 
 	/**
@@ -695,6 +1101,18 @@ class GBT_License_Manager
 					'message_type' => 'error',
 					'license_data' => $this->get_license_data()
 				];
+			}
+
+			// Refresh special license data from API and update WordPress option
+			if (class_exists('GBT_Special_License_Manager')) {
+				$special_license_manager = GBT_Special_License_Manager::get_instance();
+				$special_license_manager->refresh_special_license_data($license_key);
+			}
+
+			// Refresh buyer review data from API and update WordPress option
+			if (class_exists('GBT_Buyer_Review_Checker')) {
+				$review_checker = GBT_Buyer_Review_Checker::get_instance();
+				$review_checker->refresh_buyer_review_data($license_key);
 			}
 
 			// Update the last verification time
@@ -839,7 +1257,7 @@ class GBT_License_Manager
 	 * @param int $threshold_days The number of days threshold to consider "close to expiring"
 	 * @return bool True if close to expiring, false otherwise
 	 */
-	public function is_support_expiring_soon(int $threshold_days = 30): bool
+	public function is_support_expiring_soon(int $threshold_days = 7): bool
 	{
 		$days_remaining = $this->get_support_days_remaining();
 
@@ -862,13 +1280,8 @@ class GBT_License_Manager
 	private function verify_with_envato(string $license_key, string $theme_slug): array
 	{
 		// Get URLs from config
-		if ($this->is_development_environment()) {
-			$config = GBT_License_Config::get_instance();
-			$urls = [$config->get_dev_verification_url()];
-		} else {
-			$config = GBT_License_Config::get_instance();
-			$urls = $config->get_verification_urls();
-		}
+		$config = GBT_License_Config::get_instance();
+		$urls = $config->get_verification_urls();
 
 		// Set request parameters
 		$request_args = [
@@ -877,7 +1290,7 @@ class GBT_License_Manager
 				'theme_slug' => $theme_slug
 			],
 			'timeout' => 30,
-			'sslverify' => !$this->is_development_environment(),
+			'sslverify' => true,
 			'headers' => [
 				'X-Requested-With' => 'XMLHttpRequest'
 			]
@@ -933,6 +1346,7 @@ class GBT_License_Manager
 		// If all URLs failed, return the last response
 		return $response;
 	}
+
 }
 
 // Initialize the license manager hooks

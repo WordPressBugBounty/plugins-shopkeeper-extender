@@ -17,9 +17,11 @@ if (!function_exists('getbowtied_help_content')) {
 		$theme_url_support_gbt_dash = $gbt_dashboard_setup->get_theme_url_support();
 		$theme_name_gbt_dash = $gbt_dashboard_setup->get_theme_name();
 		$theme_version_gbt_dash = $gbt_dashboard_setup->get_theme_version();
-
 		// Content Start
 		include_once $base_paths['path'] . '/dashboard/inc/pages/content/template-parts/content-start.php';
+		
+		// Include badges component
+		include_once $base_paths['path'] . '/dashboard/inc/pages/content/template-parts/badges.php';
 ?>
 
 		<div class="overflow-hidden py-24 sm:py-32">
@@ -27,14 +29,7 @@ if (!function_exists('getbowtied_help_content')) {
 				<div class="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-1">
 					<div>
 						<div class="lg:max-w-lg">
-							<div class="flex items-center gap-3">
-								<span class="inline-flex items-center gap-x-1.5 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white">
-									<svg class="size-2 fill-green-400" viewBox="0 0 6 6" aria-hidden="true">
-										<circle cx="3" cy="3" r="3" />
-									</svg>
-									VERSION <?php echo esc_html($theme_version_gbt_dash); ?>
-								</span>
-							</div>
+							<?php gbt_display_version_badge(); ?>
 							<h2 class="mt-4 text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl leading-14"><?php echo esc_html($theme_name_gbt_dash); ?> Help</h2>
 							<p class="mt-6 text-lg leading-8 text-gray-600">
 								Everything you need to make the most of your theme and create a stunning website.

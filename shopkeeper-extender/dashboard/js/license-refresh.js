@@ -18,7 +18,7 @@
             e.preventDefault();
             
             // Show refreshing status
-            $refreshStatus.removeClass('hidden text-green-500 text-red-600')
+            $refreshStatus.removeClass('hidden text-[var(--color-wp-green)] text-[var(--color-wp-red)]')
                          .addClass('text-gray-700')
                          .text(gbtLicenseRefresh.refreshing_text);
             
@@ -51,7 +51,7 @@
                 error: function() {
                     // Show general error
                     $refreshStatus.removeClass('text-gray-700')
-                                 .addClass('text-red-600')
+                                 .addClass('text-[var(--color-wp-red)]')
                                  .text(gbtLicenseRefresh.error_text);
                 },
                 complete: function() {
@@ -67,7 +67,7 @@
         function updateUIOnSuccess(data) {
             // Update status display
             $refreshStatus.removeClass('text-gray-700')
-                         .addClass('text-green-500')
+                         .addClass('text-[var(--color-wp-green)]')
                          .text(gbtLicenseRefresh.success_text);
                          
             // Update license status
@@ -84,8 +84,8 @@
             }
             
             // Show success message
-            $licenseResponse.removeClass('hidden border-red-200 bg-red-50 text-red-700')
-                           .addClass('border-green-200 bg-green-50 text-green-700')
+            $licenseResponse.removeClass('hidden border-[var(--color-wp-red)]/20 bg-[var(--color-wp-red)]/10 text-[var(--color-wp-red)]')
+                           .addClass('border-[var(--color-wp-green)]/20 bg-[var(--color-wp-green)]/10 text-[var(--color-wp-green)]')
                            .html('<p>' + data.message + '</p>');
         }
         
@@ -95,7 +95,7 @@
         function updateUIOnError(data) {
             // Update status display
             $refreshStatus.removeClass('text-gray-700')
-                         .addClass('text-red-600')
+                         .addClass('text-[var(--color-wp-red)]')
                          .text(gbtLicenseRefresh.error_text);
                          
             // Update status if provided
@@ -109,8 +109,8 @@
             }
             
             // Show error message
-            $licenseResponse.removeClass('hidden border-green-200 bg-green-50 text-green-700')
-                           .addClass('border-red-200 bg-red-50 text-red-700')
+            $licenseResponse.removeClass('hidden border-[var(--color-wp-green)]/20 bg-[var(--color-wp-green)]/10 text-[var(--color-wp-green)]')
+                           .addClass('border-[var(--color-wp-red)]/20 bg-[var(--color-wp-red)]/10 text-[var(--color-wp-red)]')
                            .html('<p>' + data.message + '</p>');
         }
         
@@ -126,7 +126,7 @@
             
             // Update styling
             if (status === 'active') {
-                $licenseStatus.removeClass('text-red-600').addClass('text-green-500');
+                $licenseStatus.removeClass('text-[var(--color-wp-red)]').addClass('text-[var(--color-wp-green)]');
                 $licenseStatus.html(
                     '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">' +
                     '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />' +
@@ -134,7 +134,7 @@
                     '<span id="license-status-text">Active</span>'
                 );
             } else {
-                $licenseStatus.removeClass('text-green-500').addClass('text-red-600');
+                $licenseStatus.removeClass('text-[var(--color-wp-green)]').addClass('text-[var(--color-wp-red)]');
                 $licenseStatus.html(
                     '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">' +
                     '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />' +
@@ -156,7 +156,7 @@
             
             // Update styling
             if (status === 'active') {
-                $supportStatus.removeClass('text-red-600').addClass('text-green-500');
+                $supportStatus.removeClass('text-[var(--color-wp-red)]').addClass('text-[var(--color-wp-green)]');
                 $supportStatus.html(
                     '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">' +
                     '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />' +
@@ -164,7 +164,7 @@
                     '<span id="support-status-text">Active</span>'
                 );
             } else {
-                $supportStatus.removeClass('text-green-500').addClass('text-red-600');
+                $supportStatus.removeClass('text-[var(--color-wp-green)]').addClass('text-[var(--color-wp-red)]');
                 $supportStatus.html(
                     '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">' +
                     '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />' +

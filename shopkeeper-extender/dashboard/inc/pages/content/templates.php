@@ -26,8 +26,8 @@ if (!function_exists('getbowtied_templates_content')) {
 					<div>
 						<div class="lg:max-w-lg">
 							<div class="flex items-center gap-3">
-								<span class="inline-flex items-center gap-x-1.5 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white">
-									<svg class="size-2 fill-green-400" viewBox="0 0 6 6" aria-hidden="true">
+								<span class="inline-flex items-center gap-x-1.5 rounded-md bg-[var(--color-wp-gray-dark)] px-3 py-1.5 text-xs font-medium text-white">
+									<svg class="size-2 fill-[var(--color-wp-green)]" viewBox="0 0 6 6" aria-hidden="true">
 										<circle cx="3" cy="3" r="3" />
 									</svg>
 									VERSION <?php echo esc_html($theme_version_gbt_dash); ?>

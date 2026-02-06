@@ -24,8 +24,17 @@ require_once($base_paths['path'] . '/dashboard/inc/classes/class-license-menu-ba
 // Include License Server Connector class
 require_once($base_paths['path'] . '/dashboard/inc/classes/class-license-server-connector.php');
 
+// Include Special License Manager class
+require_once($base_paths['path'] . '/dashboard/inc/classes/class-special-license-manager.php');
+
+// Include Buyer Review Checker class
+require_once($base_paths['path'] . '/dashboard/inc/classes/class-buyer-review-checker.php');
+
 // Include Theme Price Updater class
 require_once($base_paths['path'] . '/dashboard/inc/classes/class-theme-price-updater.php');
+
+// Include Theme Updates handler
+require_once($base_paths['path'] . '/dashboard/inc/classes/class-theme-updates.php');
 
 // Update includes to use base_paths
 include_once($base_paths['path'] . '/dashboard/inc/pages/includes.php');

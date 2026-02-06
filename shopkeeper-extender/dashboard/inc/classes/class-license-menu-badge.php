@@ -58,11 +58,15 @@ class GBT_License_Menu_Badge
             return true;
         }
         
-        // Check if expiring soon (within 14 days)
-        if ($license_manager->is_support_expiring_soon(14)) {
+        // Check if expiring soon
+        if ($license_manager->is_support_expiring_soon()) {
             return true;
         }
         
+        if ($this->has_locked_special_benefits($license_manager)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -116,7 +120,36 @@ class GBT_License_Menu_Badge
      */
     private function get_badge_html()
     {
-        return '<span class="update-plugins count-1"><span class="plugin-count">1</span></span>';
+        return '<span class="update-plugins count-1"><span class="plugin-count">!</span></span>';
+    }
+
+    /**
+     * Check if special benefits exist but are currently locked
+     *
+     * @param GBT_License_Manager $license_manager The license manager instance
+     * @return bool True when benefits are locked
+     */
+    private function has_locked_special_benefits(GBT_License_Manager $license_manager): bool
+    {
+        if (!class_exists('GBT_Buyer_Review_Checker') || !class_exists('GBT_Special_License_Manager')) {
+            return false;
+        }
+
+        $license_key = $license_manager->get_license_key();
+
+        if (empty($license_key)) {
+            return false;
+        }
+
+        $special_license_manager = GBT_Special_License_Manager::get_instance();
+
+        if (!$special_license_manager->has_special_license($license_key)) {
+            return false;
+        }
+
+        $review_checker = GBT_Buyer_Review_Checker::get_instance();
+
+        return $review_checker->should_disable_special_benefits($license_key);
     }
 }
 

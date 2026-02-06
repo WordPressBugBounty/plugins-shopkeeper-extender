@@ -59,8 +59,8 @@ if (!function_exists('getbowtied_license1_content')) {
                     <div>
                         <div class="lg:max-w-lg">
                             <div class="flex items-center gap-3">
-                                <span class="inline-flex items-center gap-x-1.5 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white">
-                                    <svg class="size-2 fill-green-400" viewBox="0 0 6 6" aria-hidden="true">
+                                <span class="inline-flex items-center gap-x-1.5 rounded-md bg-[var(--color-wp-gray-dark)] px-3 py-1.5 text-xs font-medium text-white">
+                                    <svg class="size-2 fill-[var(--color-wp-green)]" viewBox="0 0 6 6" aria-hidden="true">
                                         <circle cx="3" cy="3" r="3" />
                                     </svg>
                                     VERSION <?php echo esc_html($theme_version_gbt_dash); ?>
@@ -81,7 +81,7 @@ if (!function_exists('getbowtied_license1_content')) {
                                 <div class="py-3 px-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4 mb-8">
                                     <p class="font-medium text-gray-700 flex items-center gap-2">
                                         Status:
-                                        <span id="license-status" class="inline-flex items-center gap-1.5 <?php echo $license_data['license_status'] === 'active' ? 'text-green-500' : 'text-red-600'; ?> font-semibold">
+                                        <span id="license-status" class="inline-flex items-center gap-1.5 <?php echo $license_data['license_status'] === 'active' ? 'text-[var(--color-wp-green)]' : 'text-[var(--color-wp-red)]'; ?> font-semibold">
                                             <?php if ($license_data['license_status'] === 'active'): ?>
                                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
@@ -91,13 +91,13 @@ if (!function_exists('getbowtied_license1_content')) {
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                                                 </svg>
                                             <?php endif; ?>
-                                            <span id="license-status-text"><?php echo ucfirst(esc_html($license_data['license_status'])); ?></span>
+                                            <span id="license-status-text"><?php echo esc_html(ucfirst($license_data['license_status'])); ?></span>
                                         </span>
                                     </p>
 
                                     <p class="font-medium text-gray-700 flex items-center gap-2">
                                         Support:
-                                        <span id="support-status" class="inline-flex items-center gap-1.5 <?php echo $license_manager->is_support_active() ? 'text-green-500' : 'text-red-600'; ?> font-semibold">
+                                        <span id="support-status" class="inline-flex items-center gap-1.5 <?php echo $license_manager->is_support_active() ? 'text-[var(--color-wp-green)]' : 'text-[var(--color-wp-red)]'; ?> font-semibold">
                                             <?php if ($license_manager->is_support_active()): ?>
                                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
@@ -159,7 +159,7 @@ if (!function_exists('getbowtied_license1_content')) {
 function gbt_ajax_refresh_license()
 {
     // Check nonce
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'gbt_license_refresh_nonce')) {
+    if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'gbt_license_refresh_nonce')) {
         wp_send_json_error(['message' => 'Security check failed']);
     }
 

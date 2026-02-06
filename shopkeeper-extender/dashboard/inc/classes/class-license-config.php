@@ -6,8 +6,8 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
  * GetBowtied License Configuration
  * 
  * Centralizes configuration settings for the license system including:
- * - Environment detection (localhost, development mode)
- * - URL configurations for both production and development
+ * - Environment detection (localhost)
+ * - URL configurations for production endpoints
  * - License system settings
  */
 class GBT_License_Config
@@ -44,16 +44,6 @@ class GBT_License_Config
 	// -------------------------------------------------------------------------
 	// Environment Detection Methods
 	// -------------------------------------------------------------------------
-
-	/**
-	 * Check if development mode is enabled
-	 * 
-	 * @return bool Whether development mode is enabled
-	 */
-	public function is_dev_mode_enabled(): bool
-	{
-		return defined('WP_GBT_DEV_ENV') && WP_GBT_DEV_ENV === true;
-	}
 
 	/**
 	 * Get localhost hostnames
@@ -105,17 +95,6 @@ class GBT_License_Config
 	}
 
 	/**
-	 * Get verification production URL
-	 * 
-	 * @return string The production verification URL
-	 */
-	public function get_verification_production_url(): string
-	{
-		$base_urls = $this->get_api_base_urls();
-		return $base_urls[0] . '/verify_license.php';
-	}
-
-	/**
 	 * Get all verification URLs (primary and fallback)
 	 * 
 	 * @return array Array of verification URLs to try in order
@@ -127,17 +106,6 @@ class GBT_License_Config
 			$urls[] = $base_url . '/verify_license.php';
 		}
 		return $urls;
-	}
-
-	/**
-	 * Get license server API URL for production
-	 * 
-	 * @return string The license server API URL
-	 */
-	public function get_license_server_api_url(): string
-	{
-		$base_urls = $this->get_api_base_urls();
-		return $base_urls[0] . '/license_receiver_api.php';
 	}
 
 	/**
@@ -155,17 +123,6 @@ class GBT_License_Config
 	}
 
 	/**
-	 * Get theme price API URL for production
-	 * 
-	 * @return string The theme price API URL
-	 */
-	public function get_theme_price_api_url(): string
-	{
-		$base_urls = $this->get_api_base_urls();
-		return $base_urls[0] . '/update_theme_price.php';
-	}
-
-	/**
 	 * Get all theme price URLs (primary and fallback)
 	 * 
 	 * @return array Array of theme price URLs to try in order
@@ -179,64 +136,50 @@ class GBT_License_Config
 		return $urls;
 	}
 
-	// -------------------------------------------------------------------------
-	// Development URL Configuration Methods
-	// -------------------------------------------------------------------------
-
 	/**
-	 * Get development server path
+	 * Get all special license URLs (primary and fallback)
 	 * 
-	 * @return string The development server path
+	 * @return array Array of special license URLs to try in order
 	 */
-	public function get_dev_server_path(): string
+	public function get_special_license_urls(): array
 	{
-		return '/dashboard/_server';
+		$urls = [];
+		foreach ($this->get_api_base_urls() as $base_url) {
+			$urls[] = $base_url . '/get_special_license.php';
+		}
+		return $urls;
 	}
 
 	/**
-	 * Get development API base URL
+	 * Get all buyer review URLs (primary and fallback)
 	 * 
-	 * @return string The development API base URL
+	 * @return array Array of buyer review URLs to try in order
 	 */
-	public function get_dev_api_base_url(): string
+	public function get_buyer_review_urls(): array
 	{
-		$gbt_dashboard = GBT_Dashboard_Setup::init();
-		$base_paths = $gbt_dashboard->get_base_paths();
-		return $base_paths['url'] . $this->get_dev_server_path();
+		$urls = [];
+		foreach ($this->get_api_base_urls() as $base_url) {
+			$urls[] = $base_url . '/get_buyer_reviews.php';
+		}
+		return $urls;
 	}
 
 	/**
-	 * Get development verification URL
-	 * 
-	 * @return string The development verification URL
+	 * Get all specific rating URLs (primary and fallback)
+	 *
+	 * @return array Array of specific rating URLs to try in order
 	 */
-	public function get_dev_verification_url(): string
+	public function get_specific_rating_urls(): array
 	{
-		return $this->get_dev_api_base_url() . '/verify_license.php';
+		$urls = [];
+		foreach ($this->get_api_base_urls() as $base_url) {
+			$urls[] = $base_url . '/get_specific_rating.php';
+		}
+		return $urls;
 	}
 
-	/**
-	 * Get development license server URL
-	 * 
-	 * @return string The development license server URL
-	 */
-	public function get_dev_license_server_url(): string
-	{
-		return $this->get_dev_api_base_url() . '/license_receiver_api.php';
-	}
-
-	/**
-	 * Get development theme price API URL
-	 * 
-	 * @return string The development theme price API URL
-	 */
-	public function get_dev_theme_price_api_url(): string
-	{
-		return $this->get_dev_api_base_url() . '/update_theme_price.php';
-	}
-
-	// -------------------------------------------------------------------------
-	// License Configuration Methods
+    // -------------------------------------------------------------------------
+    // License Configuration Methods
 	// -------------------------------------------------------------------------
 
 	/**
@@ -251,7 +194,8 @@ class GBT_License_Config
 			'theme_id' => 'getbowtied_theme_license_theme_id',
 			'info' => 'getbowtied_theme_license_info',
 			'last_verified' => 'getbowtied_theme_license_last_verified',
-			'support_expiration' => 'getbowtied_theme_license_support_expiration_date'
+			'support_expiration' => 'getbowtied_theme_license_support_expiration_date',
+			'special_license_data' => 'getbowtied_theme_special_license_data'
 		];
 	}
 }

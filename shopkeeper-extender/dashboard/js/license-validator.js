@@ -14,7 +14,7 @@ jQuery(document).ready(function($) {
     const LICENSE_KEY_PATTERN = /^.{8}-.{4}-.{4}-.{4}-.{12}$/;
     
     // Error message container
-    let $errorContainer = $('<div class="license-validation-error text-red-600 text-sm mt-1" style="display: none;"></div>');
+    let $errorContainer = $('<div class="license-validation-error text-[var(--color-wp-red)] text-sm mt-1" style="display: none;"></div>');
     $licenseKeyInput.after($errorContainer);
     
     // Flag to track if user has interacted with the input

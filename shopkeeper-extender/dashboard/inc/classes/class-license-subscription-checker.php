@@ -16,20 +16,20 @@ class GBT_License_Subscription_Checker
 	 */
 	private static $instance = null;
 
+
 	/**
-	 * Notification settings
+	 * Notification IDs
 	 */
-	private $notification_settings = [
-		'expired_id'          => 'license_subscription_expired',
-		'expiring_soon_id'    => 'license_subscription_expiring_soon',
-		'dismiss_option'      => 'getbowtied_theme_license_subscription_expired_dismissed',
-		'dismiss_soon_option' => 'getbowtied_theme_license_subscription_expiring_soon_dismissed',
-		'dismiss_days'        => 1,
-		'expiring_threshold'  => 14, // Days threshold for "expiring soon" notification
-		'script_handle'       => 'gbt-license-subscription-notification',
-		'script_filename'     => 'license-subscription-notification.js',
-		'nonce_action'        => 'gbt_license_notification_nonce'
+	private $notification_ids = [
+		'no_license' => 'license_no_license_detected',
+		'expired' => 'license_subscription_expired',
+		'expiring_soon' => 'license_subscription_expiring_soon'
 	];
+
+	/**
+	 * User meta key prefix for dismissed notifications
+	 */
+	private $dismissed_meta_prefix = 'gbt_dismissed_license_notifications_';
 
 	/**
 	 * Option keys
@@ -57,10 +57,6 @@ class GBT_License_Subscription_Checker
 		// Get license config
 		$config = GBT_License_Config::get_instance();
 
-		// Update notification settings with values from config
-		$this->notification_settings['dismiss_days'] = 1;
-		$this->notification_settings['expiring_threshold'] = 14;
-
 		// Get license option keys from config
 		$option_keys = $config->get_license_option_keys();
 		$this->option_keys = [
@@ -87,14 +83,14 @@ class GBT_License_Subscription_Checker
 	 */
 	private function register_hooks()
 	{
-		// Load styles on all admin pages
-		add_action('admin_enqueue_scripts', [$this, 'enqueue_notification_assets']);
-
 		// Display notifications
 		add_action('admin_notices', [$this, 'check_license_and_display_notification']);
-
-		// Handle dismissals
-		add_action('wp_ajax_dismiss_license_subscription_notification', [$this, 'handle_ajax_notification_dismissal']);
+		
+		// Handle AJAX dismissal
+		add_action('wp_ajax_dismiss_license_notification', [$this, 'ajax_dismiss_notification']);
+		
+		// Enqueue dismissal script
+		add_action('admin_enqueue_scripts', [$this, 'enqueue_dismissal_script']);
 	}
 
 	/**
@@ -102,6 +98,15 @@ class GBT_License_Subscription_Checker
 	 */
 	public function check_license_and_display_notification()
 	{
+		// Skip on our custom dashboard pages - banner is displayed via license-status-banner.php component
+		if (isset($_GET['page'])) {
+			$gbt_dashboard = GBT_Dashboard_Setup::init();
+			$dashboard_pages = $gbt_dashboard->get_dashboard_page_slugs();
+			if (in_array($_GET['page'], $dashboard_pages)) {
+				return;
+			}
+		}
+
 		// Get dashboard setup and check theme slug
 		global $gbt_dashboard_setup;
 		if (isset($gbt_dashboard_setup) && is_object($gbt_dashboard_setup)) {
@@ -116,9 +121,16 @@ class GBT_License_Subscription_Checker
 			return; // Don't show any notifications during the initialization period
 		}
 		
+		// Get theme version for notification IDs
+		$gbt_dashboard = GBT_Dashboard_Setup::init();
+		$theme_version = $gbt_dashboard->get_theme_version();
+		
 		// First check if license information exists
 		if (!$this->has_valid_license_info()) {
-			$this->display_missing_license_notification();
+			$base_type = $this->get_base_type($this->notification_ids['no_license']);
+			if (!$this->is_notification_dismissed_by_type($base_type)) {
+				$this->display_missing_license_notification();
+			}
 			return;
 		}
 
@@ -126,19 +138,22 @@ class GBT_License_Subscription_Checker
 		$license_manager = GBT_License_Manager::get_instance();
 
 		// Priority check: First check if license is active but support has expired 
-		if ($license_manager->is_license_active() && !$license_manager->is_support_active() && !$this->is_notification_dismissed()) {
-			$this->display_expired_subscription_notification();
+		if ($license_manager->is_license_active() && !$license_manager->is_support_active()) {
+			$base_type = $this->get_base_type($this->notification_ids['expired']);
+			if (!$this->is_notification_dismissed_by_type($base_type)) {
+				$this->display_expired_subscription_notification();
+			}
 			return;
 		}
 
 		// Next check: If license is active and support is active, check if it's about to expire
 		if ($license_manager->is_license_active() && $license_manager->is_support_active()) {
-			// Check if it's expiring soon and notification hasn't been dismissed
-			if (
-				$license_manager->is_support_expiring_soon($this->notification_settings['expiring_threshold'])
-				&& !$this->is_expiring_soon_notification_dismissed()
-			) {
-				$this->display_expiring_soon_notification($license_manager->get_support_days_remaining());
+			// Check if it's expiring soon
+			if ($license_manager->is_support_expiring_soon()) {
+				$base_type = $this->get_base_type($this->notification_ids['expiring_soon']);
+				if (!$this->is_notification_dismissed_by_type($base_type)) {
+					$this->display_expiring_soon_notification($license_manager->get_support_days_remaining());
+				}
 			}
 		}
 	}
@@ -162,44 +177,18 @@ class GBT_License_Subscription_Checker
 		$gbt_dashboard = GBT_Dashboard_Setup::init();
 		$theme_name = $gbt_dashboard->get_theme_name();
 		$theme_slug = $gbt_dashboard->get_theme_slug();
+		$theme_version = $gbt_dashboard->get_theme_version();
 		$license_page_url = admin_url('admin.php?page=getbowtied-license');
 		$purchase_url = $gbt_dashboard->get_theme_sales_page_url();
+		
+		$notice_id = $this->get_notice_id($this->notification_ids['no_license'], $theme_version);
 
 ?>
-		<div class="notice-error settings-error notice getbowtied_ext_notice gbt-dashboard-notification no-license-notification"
-			data-message-id="license_no_license_detected"
-			data-theme-slug="<?php echo esc_attr($theme_slug); ?>">
-			<div class="getbowtied_ext_notice__aside">
-				<div class="getbowtied_icon" aria-hidden="true"><br></div>
-			</div>
-
-			<div class="getbowtied_ext_notice__content">
-				<div class="title-container">
-					<h3 class="title"><strong>CRITICAL ALERT:</strong> <?php echo esc_html($theme_name); ?> theme license not detected!</h3>
-					<a href="#" class="getbowtied_ext_notice__toggle_link">Click for details</a>
-				</div>
-				<div class="getbowtied_ext_notice__collapsible_content">
-					<p>Your <?php echo esc_html($theme_name); ?> theme is currently operating without a valid license key.</p>
-
-					<p>
-						<strong>To avoid any disruptions to your website</strong>, your theme requires a valid license key.
-					</p>
-
-					<p>
-						<strong class="getbowtied_ext_notice_red_text">Security Risk: Without a valid license, your website may be exposed to vulnerabilities.</strong>
-					</p>
-
-					<p>
-						<a href="<?php echo esc_url($license_page_url); ?>" class="button button-primary button-large">Activate Your License Now</a>
-						<a href="<?php echo esc_url($purchase_url); ?>" target="_blank" class="button button-large">Get a License</a>
-						<span class="reminder-options">
-							<a href="#" class="dismiss-notification reminder-btn" data-message-id="license_no_license_detected" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="1">Remind me tomorrow</a>
-							<a href="#" class="dismiss-notification reminder-btn" data-message-id="license_no_license_detected" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="7">Remind me in 1 week</a>
-							<a href="#" class="dismiss-notification reminder-btn" data-message-id="license_no_license_detected" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="30">Remind me in 1 month</a>
-						</span>
-					</p>
-				</div>
-			</div>
+		<div id="<?php echo esc_attr($notice_id); ?>" class="notice notice-error">
+			<p style="display: flex; align-items: center;">
+				<span class="dashicons dashicons-warning" style="color: #d63638; margin-right: 8px;"></span>
+				<span>A license key is required to use <?php echo esc_html($theme_name); ?> theme. <a href="<?php echo esc_url($license_page_url); ?>" class="button button-primary"><strong>Fix it now →</strong></a></span>
+			</p>
 		</div>
 	<?php
 	}
@@ -212,56 +201,20 @@ class GBT_License_Subscription_Checker
 		$gbt_dashboard = GBT_Dashboard_Setup::init();
 		$theme_name = $gbt_dashboard->get_theme_name();
 		$theme_slug = $gbt_dashboard->get_theme_slug();
+		$theme_version = $gbt_dashboard->get_theme_version();
 
 		$license_page_url = admin_url('admin.php?page=getbowtied-license');
 		$license_details_url = $license_page_url;
 		$renew_url = $gbt_dashboard->get_theme_sales_page_url();
+		
+		$notice_id = $this->get_notice_id($this->notification_ids['expired'], $theme_version);
 
 	?>
-		<div class="notice-error settings-error notice getbowtied_ext_notice expired-notification gbt-dashboard-notification"
-			data-message-id="<?php echo esc_attr($this->notification_settings['expired_id']); ?>"
-			data-theme-slug="<?php echo esc_attr($theme_slug); ?>">
-			<div class="getbowtied_ext_notice__aside">
-				<div class="getbowtied_icon" aria-hidden="true"><br></div>
-			</div>
-
-			<div class="getbowtied_ext_notice__content">
-				<div class="title-container">
-					<h3 class="title">Your "<?php echo esc_html($theme_name); ?>" Professional Plan has expired</h3>
-					<a href="#" class="getbowtied_ext_notice__toggle_link">Click for details</a>
-				</div>
-				<div class="getbowtied_ext_notice__collapsible_content">
-					<h4>Your <?php echo esc_html($theme_name); ?> theme Professional Plan has ended, putting your website at risk.</h4>
-
-					<p>
-						<strong>IMPORTANT:</strong> Your site is currently <span class="getbowtied_ext_notice_red_text">no longer auto-receiving</span>:
-					</p>
-
-					<ul>
-						<li class="dashicons-before dashicons-shield-alt">Built-in critical security updates</li>
-						<li class="dashicons-before dashicons-update-alt">Built-in priority bug fixes, security & compatibility updates</li>
-						<li class="dashicons-before dashicons-admin-users">Expert assistance from a dedicated developer</li>
-					</ul>
-
-					<p>
-						<strong class="getbowtied_ext_notice_red_text">Without an active support plan, your website is exposed to security vulnerabilities and compatibility issues with future WordPress and WooCommerce updates.</strong>
-					</p>
-
-					<p>
-						<strong>Renew now to regain exclusive access to automatic updates, priority assistance, and security patches that ensure your store runs smoothly and securely.</strong>
-					</p>
-
-					<p>
-						<a href="<?php echo esc_url($license_details_url); ?>" class="button button-primary button-large">View Your License Details</a>
-						&nbsp;
-						<span class="reminder-options">
-							<a href="#" class="dismiss-notification reminder-btn" data-message-id="<?php echo esc_attr($this->notification_settings['expired_id']); ?>" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="1">Remind me tomorrow</a>
-							<a href="#" class="dismiss-notification reminder-btn" data-message-id="<?php echo esc_attr($this->notification_settings['expired_id']); ?>" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="7">Remind me in 1 week</a>
-							<a href="#" class="dismiss-notification reminder-btn" data-message-id="<?php echo esc_attr($this->notification_settings['expired_id']); ?>" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="30">Remind me in 1 month</a>
-						</span>
-					</p>
-				</div>
-			</div>
+		<div id="<?php echo esc_attr($notice_id); ?>" class="notice notice-error is-dismissible">
+			<p style="display: flex; align-items: center;">
+				<span class="dashicons dashicons-dismiss" style="color: #d63638; margin-right: 8px;"></span>
+				<span>Your subscription for <?php echo esc_html($theme_name); ?> theme has expired. <a href="<?php echo esc_url($license_details_url); ?>" class="button button-primary"><strong>Fix it now →</strong></a></span>
+			</p>
 		</div>
 	<?php
 	}
@@ -276,6 +229,7 @@ class GBT_License_Subscription_Checker
 		$gbt_dashboard = GBT_Dashboard_Setup::init();
 		$theme_name = $gbt_dashboard->get_theme_name();
 		$theme_slug = $gbt_dashboard->get_theme_slug();
+		$theme_version = $gbt_dashboard->get_theme_version();
 
 		// Get license manager for formatted date
 		$license_manager = GBT_License_Manager::get_instance();
@@ -287,246 +241,153 @@ class GBT_License_Subscription_Checker
 
 		// Format days remaining text
 		$days_text = $days_remaining == 1 ? 'day' : 'days';
+		
+		$notice_id = $this->get_notice_id($this->notification_ids['expiring_soon'], $theme_version);
 
 	?>
-		<div class="notice-warning settings-error notice getbowtied_ext_notice gbt-dashboard-notification"
-			data-message-id="<?php echo esc_attr($this->notification_settings['expiring_soon_id']); ?>" 
-			data-theme-slug="<?php echo esc_attr($theme_slug); ?>">
-			<div class="getbowtied_ext_notice__aside">
-				<div class="getbowtied_icon" aria-hidden="true"><br></div>
-			</div>
-
-			<div class="getbowtied_ext_notice__content">
-				<div class="title-container">
-					<h3 class="title">IMPORTANT: Your <?php echo esc_html($theme_name); ?> Professional Plan <?php
-																													if ($days_remaining == 0) {
-																														echo 'expires today!';
-																													} elseif ($days_remaining == 1) {
-																														echo 'expires tomorrow!';
-																													} else {
-																														echo 'expires in ' . esc_html($days_remaining) . ' days!';
-																													}
-																													?></h3>
-					<a href="#" class="getbowtied_ext_notice__toggle_link">Click for details</a>
-				</div>
-				<div class="getbowtied_ext_notice__collapsible_content">
-					<h4>Your <?php echo esc_html($theme_name); ?> Professional Plan will expire on <?php echo esc_html($expiration_date); ?>, putting your site at risk.</h4>
-
-					<p>
-						<strong>Act now:</strong> <?php
-													if ($days_remaining == 0) {
-														echo '<span class="getbowtied_ext_notice_red_text">Today is your last day of coverage</span>. After today, you will';
-													} elseif ($days_remaining == 1) {
-														echo '<span class="getbowtied_ext_notice_red_text">Starting tomorrow</span>, you will';
-													} else {
-														echo '<span class="getbowtied_ext_notice_red_text">In ' . esc_html($days_remaining) . ' days</span>, you will';
-													}
-													?> lose access to:
-					</p>
-
-					<ul>
-						<li class="dashicons-before dashicons-shield-alt">Built-in critical security updates</li>
-						<li class="dashicons-before dashicons-update-alt">Built-in priority bug fixes, security & compatibility updates</li>
-						<li class="dashicons-before dashicons-admin-users">Expert assistance from a dedicated developer</li>
-					</ul>
-
-					<p>
-						<strong>Renew today to maintain uninterrupted access to automatic updates, premium features, and critical security patches.</strong>
-					</p>
-
-					<p>
-						<a href="<?php echo esc_url($license_details_url); ?>" class="button button-primary button-large">View Your License Details</a>
-						&nbsp;
-						<span class="reminder-options">
-							<a href="#" class="dismiss-notification reminder-btn" data-message-id="<?php echo esc_attr($this->notification_settings['expiring_soon_id']); ?>" data-theme-slug="<?php echo esc_attr($theme_slug); ?>" data-days="1">Remind me tomorrow</a>
-						</span>
-					</p>
-				</div>
-			</div>
+		<div id="<?php echo esc_attr($notice_id); ?>" class="notice notice-warning is-dismissible">
+			<p style="display: flex; align-items: center;">
+				<span class="dashicons dashicons-clock" style="color: #dba617; margin-right: 8px;"></span>
+				<span>Your <?php echo esc_html($theme_name); ?> theme subscription <?php
+				if ($days_remaining == 0) {
+					echo 'expires today.';
+				} elseif ($days_remaining == 1) {
+					echo 'expires tomorrow.';
+				} else {
+					echo 'expires in ' . esc_html($days_remaining) . ' days.';
+				}
+				?>&nbsp;<a href="<?php echo esc_url($license_details_url); ?>" class="button button-primary"><strong>Fix it now →</strong></a></span>
+			</p>
 		</div>
 	<?php
 	}
 
 	/**
-	 * Check if expired notification has been dismissed by the user
+	 * Generate notice ID with hash (version-dependent for HTML ID)
 	 *
-	 * @return bool True if notification is dismissed, false otherwise
+	 * @param string $base_id Base notification ID
+	 * @param string $version Theme version
+	 * @return string Hashed notice ID (12 character MD5 hash)
 	 */
-	private function is_notification_dismissed()
+	private function get_notice_id($base_id, $version)
 	{
-		return $this->is_notification_type_dismissed(
-			$this->notification_settings['dismiss_option']
-		);
+		// Create a hash from the base ID and version (changes per version)
+		return substr(md5($base_id . $version), 0, 12);
+	}
+	
+	/**
+	 * Get base notification type from base_id
+	 *
+	 * @param string $base_id Base notification ID (e.g., 'license_subscription_expired')
+	 * @return string The base notification type (e.g., 'subscription_expired')
+	 */
+	private function get_base_type($base_id)
+	{
+		// Return the short form without 'license_' prefix
+		return str_replace('license_', '', $base_id);
 	}
 
 	/**
-	 * Check if expiring soon notification has been dismissed by the user
+	 * Check if a notification has been dismissed permanently by base type
 	 *
-	 * @return bool True if notification is dismissed, false otherwise
-	 */
-	private function is_expiring_soon_notification_dismissed()
-	{
-		return $this->is_notification_type_dismissed(
-			$this->notification_settings['dismiss_soon_option']
-		);
-	}
-
-	/**
-	 * Generic method to check if a notification of specified type is dismissed
-	 * 
-	 * @param string $option_name The option name to check for dismissal
+	 * @param string $base_type The base notification type (e.g., 'subscription_expired')
 	 * @return bool True if dismissed, false otherwise
 	 */
-	private function is_notification_type_dismissed($option_name)
+	private function is_notification_dismissed_by_type($base_type)
 	{
-		$dismissed = get_option($option_name, []);
-		$theme_slug = GBT_Dashboard_Setup::init()->get_theme_slug();
-
-		// Not dismissed if no record exists
-		if (empty($dismissed[$theme_slug])) {
-			return false;
+		$user_id = get_current_user_id();
+		
+		// Build meta key from base type
+		$meta_key = $this->dismissed_meta_prefix . $base_type;
+		
+		// Check if the specific meta key exists and is truthy
+		return (bool) get_user_meta($user_id, $meta_key, true);
+	}
+	
+	/**
+	 * Get notification base type from hash (for AJAX)
+	 *
+	 * @param string $hash The hashed notification ID
+	 * @return string|false The base notification type or false if not found
+	 */
+	private function get_notification_type_from_hash($hash)
+	{
+		$gbt_dashboard = GBT_Dashboard_Setup::init();
+		$theme_version = $gbt_dashboard->get_theme_version();
+		
+		// Check each notification type to see which one produces this hash
+		foreach ($this->notification_ids as $key => $base_id) {
+			// Generate hash from base_id and current version
+			if ($this->get_notice_id($base_id, $theme_version) === $hash) {
+				// Return the short form without 'license_' prefix
+				return $this->get_base_type($base_id);
+			}
 		}
-
-		// Check if stored value is an array (new format) or timestamp (old format)
-		if (is_array($dismissed[$theme_slug])) {
-			$dismissed_time = $dismissed[$theme_slug]['time'];
-			$dismiss_days = $dismissed[$theme_slug]['days'];
-		} else {
-			// Legacy format - just a timestamp with default days
-			$dismissed_time = $dismissed[$theme_slug];
-			$dismiss_days = $this->notification_settings['dismiss_days'];
-		}
-
-		// Calculate dismiss period
-		$dismiss_seconds = $dismiss_days * DAY_IN_SECONDS;
-
-		// Still dismissed if within the dismissal period
-		if (time() < ($dismissed_time + $dismiss_seconds)) {
-			return true;
-		}
-
-		// Dismissal period expired, clear the record
-		$this->clear_dismissal_record($theme_slug, $dismissed, $option_name);
-
+		
 		return false;
 	}
 
 	/**
-	 * Clear dismissal record after dismiss period has expired
-	 *
-	 * @param string $theme_slug The theme slug to clear
-	 * @param array $dismissed The current dismissed notifications array
-	 * @param string $option_name The option name to update
+	 * Handle AJAX dismissal of license notifications - saves permanently
 	 */
-	private function clear_dismissal_record($theme_slug, $dismissed, $option_name)
+	public function ajax_dismiss_notification()
 	{
-		unset($dismissed[$theme_slug]);
-		update_option($option_name, $dismissed);
-	}
+		check_ajax_referer('dismiss_license_notification', 'nonce');
 
-	/**
-	 * Handle AJAX request to dismiss notification
-	 */
-	public function handle_ajax_notification_dismissal()
-	{
-		// Verify nonce for security
-		check_ajax_referer($this->notification_settings['nonce_action'], 'nonce');
-
-		// Validate and sanitize input
-		$message_id = isset($_POST['message_id']) ? sanitize_text_field($_POST['message_id']) : '';
-		$theme_slug = isset($_POST['theme_slug']) ? sanitize_text_field($_POST['theme_slug']) : '';
-		$days = isset($_POST['days']) ? absint($_POST['days']) : $this->notification_settings['dismiss_days'];
-
-		// Get the appropriate dismiss option based on message ID
-		$dismiss_option = $this->get_dismiss_option_for_message($message_id);
-
-		if ($dismiss_option === false) {
-			wp_send_json_error('Invalid message ID');
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error('Insufficient permissions');
 		}
 
-		// Save dismissal timestamp with days parameter
-		$this->save_notification_dismissal($theme_slug, $dismiss_option, $days);
+		$message_id = isset($_POST['message_id']) ? sanitize_text_field($_POST['message_id']) : '';
+
+		if (empty($message_id)) {
+			wp_send_json_error('Missing message ID');
+		}
+
+		// Find which base notification type this hash corresponds to
+		$base_type = $this->get_notification_type_from_hash($message_id);
+		
+		if (!$base_type) {
+			wp_send_json_error('Invalid notification ID');
+		}
+
+		// Build the distinct meta key for this notification
+		$user_id = get_current_user_id();
+		$meta_key = $this->dismissed_meta_prefix . $base_type;
+		
+		// Save dismissal permanently with true value
+		update_user_meta($user_id, $meta_key, true);
 
 		wp_send_json_success();
 	}
 
 	/**
-	 * Get the dismiss option name for a given message ID
-	 * 
-	 * @param string $message_id The message ID
-	 * @return string|false The option name or false if invalid message ID
+	 * Enqueue dismissal script for license notifications
 	 */
-	private function get_dismiss_option_for_message($message_id)
-	{
-		switch ($message_id) {
-			case $this->notification_settings['expired_id']:
-				return $this->notification_settings['dismiss_option'];
-			case $this->notification_settings['expiring_soon_id']:
-				return $this->notification_settings['dismiss_soon_option'];
-			case 'license_no_license_detected':
-				return $this->notification_settings['dismiss_option'];
-			default:
-				return false;
-		}
-	}
-
-	/**
-	 * Save notification dismissal to database
-	 *
-	 * @param string $theme_slug The theme slug to associate with dismissal
-	 * @param string $option_name The option name to update
-	 * @param int $days Number of days to dismiss for
-	 */
-	private function save_notification_dismissal($theme_slug, $option_name, $days = 1)
-	{
-		$dismissed = get_option($option_name, []);
-		// Store both the time and the number of days to dismiss for
-		$dismissed[$theme_slug] = [
-			'time' => time(),
-			'days' => $days
-		];
-		update_option($option_name, $dismissed);
-	}
-
-	/**
-	 * Enqueue JavaScript for handling notification dismissal
-	 */
-	public function enqueue_notification_assets()
+	public function enqueue_dismissal_script()
 	{
 		$gbt_dashboard = GBT_Dashboard_Setup::init();
 		$base_paths = $gbt_dashboard->get_base_paths();
 		$theme_version = $gbt_dashboard->get_theme_version();
 
-		// Get the script URL using base_paths
-		$script_url = $base_paths['url'] . '/dashboard/js/' . $this->notification_settings['script_filename'];
-
-		// Register and enqueue the script
 		wp_enqueue_script(
-			$this->notification_settings['script_handle'],
-			$script_url,
+			'license-notification-dismissal',
+			$base_paths['url'] . '/dashboard/js/license-notification-dismissal.js',
 			['jquery'],
-			$theme_version ?? '1.0',
+			$theme_version,
 			true
 		);
 
-		// Localize the script with required data
 		wp_localize_script(
-			$this->notification_settings['script_handle'],
-			'gbtLicenseSubscriptionData',
+			'license-notification-dismissal',
+			'licenseNotificationData',
 			[
 				'ajaxurl' => admin_url('admin-ajax.php'),
-				'nonce'   => wp_create_nonce($this->notification_settings['nonce_action'])
+				'nonce' => wp_create_nonce('dismiss_license_notification')
 			]
 		);
-
-		// Enqueue notification styles across all admin pages
-		wp_enqueue_style(
-			'getbowtied-license-notifications',
-			$base_paths['url'] . '/dashboard/css/license-notifications.css',
-			['dashicons'],
-			$theme_version ?? '1.0'
-		);
 	}
+
 }
 
 /**

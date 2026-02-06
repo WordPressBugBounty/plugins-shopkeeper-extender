@@ -1,6 +1,6 @@
 @config "../tailwind.config.js";
 
-@import url("https://rsms.me/inter/inter.css");
+/* @import url("https://rsms.me/inter/inter.css"); */
 
 /* Styles scoped to .gbt-dashboard-scope */
 .gbt-dashboard-scope {
@@ -57,4 +57,10 @@
 	--color-wp-blue: #2271b1;
 	--color-wp-blue-darker: #135e96;
 	--color-wp-blue-lighter: #72aee6;
+	--color-wp-gray-light: #2f353a;
+	--color-wp-gray-lighter: #50575e;
+	--color-wp-gray-dark: #1f2428;
+	--color-wp-red: #d63638;
+	--color-wp-green: #00a32a;
+	--color-wp-yellow: #dba617;
 }

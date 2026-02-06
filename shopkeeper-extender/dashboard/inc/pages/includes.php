@@ -15,18 +15,8 @@ if (!function_exists('getbowtied_dashboard_pages_styles_and_scripts')) {
 		// Create an instance of the GBT_Dashboard_Setup class
 		$gbt_dashboard_setup = GBT_Dashboard_Setup::init();
 
-		// Our page slugs based on actual registered pages
-		$our_pages = array(
-			'getbowtied-dashboard',    // Main dashboard page
-			'getbowtied-help',         // Help page
-			'getbowtied-templates',    // Templates page
-			'getbowtied-diagnostics'   // Diagnostics page
-		);
-
-		// Add license page only if theme is not block-shop
-		if ($gbt_dashboard_setup->get_theme_slug() !== 'block-shop') {
-			$our_pages[] = 'getbowtied-license';      // License page
-		}
+		// Get dashboard page slugs from centralized method
+		$our_pages = $gbt_dashboard_setup->get_dashboard_page_slugs();
 
 		// Only load our assets on our pages
 		if (!in_array($_GET['page'], $our_pages)) {
@@ -65,6 +55,57 @@ if (!function_exists('getbowtied_dashboard_pages_styles_and_scripts')) {
 			array('jquery'),
 			$theme_version_gbt_dash,
 			true
+		);
+
+		// Enqueue license types modal script globally for all dashboard pages
+		// This is needed because the banner appears on all pages and has "learn more" links
+		if ($gbt_dashboard_setup->get_theme_slug() !== 'block-shop') {
+			wp_enqueue_script(
+				'getbowtied-license-types-modal',
+				$base_paths['url'] . '/dashboard/js/license-types-modal.js',
+				array('jquery'),
+				$theme_version_gbt_dash,
+				true
+			);
+		}
+
+		// Enqueue auto-update handler script
+		wp_enqueue_script(
+			'getbowtied-auto-update-handler',
+			$base_paths['url'] . '/dashboard/js/auto-update-handler.js',
+			array('jquery'),
+			$theme_version_gbt_dash,
+			true
+		);
+
+		// Localize script for AJAX
+		wp_localize_script(
+			'getbowtied-auto-update-handler',
+			'gbtAutoUpdateData',
+			array(
+				'ajaxurl' => admin_url('admin-ajax.php'),
+				'nonce' => wp_create_nonce('gbt_enable_auto_updates')
+			)
+		);
+
+		// Enqueue theme installation script
+		wp_enqueue_script(
+			'getbowtied-theme-installer',
+			$base_paths['url'] . '/dashboard/js/theme-installer.js',
+			array('jquery'),
+			$theme_version_gbt_dash,
+			true
+		);
+
+		// Localize script for theme installation AJAX
+		wp_localize_script(
+			'getbowtied-theme-installer',
+			'gbtThemeInstallerData',
+			array(
+				'ajaxurl' => admin_url('admin-ajax.php'),
+				'nonce' => wp_create_nonce('install_theme_ajax'),
+				'activate_nonce' => wp_create_nonce('activate_theme_ajax')
+			)
 		);
 
 		// Documentation and Changelog pages are commented out in pages.php

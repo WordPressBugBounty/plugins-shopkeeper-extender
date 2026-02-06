@@ -149,9 +149,9 @@ if ( !class_exists(Extension::class, false) ):
 			}
 			check_ajax_referer('puc-ajax');
 
-			//phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting -- Part of a debugging feature.
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting, QITStandard.PHP.DebugCode.ErrorReportingMaximum -- Part of a debugging feature.
 			error_reporting(E_ALL);
-			//phpcs:ignore WordPress.PHP.IniSet.display_errors_Blacklisted
+			// phpcs:ignore WordPress.PHP.IniSet.display_errors_Blacklisted, QITStandard.PHP.DebugCode.DangerousIniSet -- Part of a debugging feature.
 			@ini_set('display_errors', 'On');
 		}
 
