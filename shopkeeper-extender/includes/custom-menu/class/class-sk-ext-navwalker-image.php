@@ -1,4 +1,7 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 /**
  * Add Thumbnail URL attribute to WordPress menus.
  */
@@ -168,12 +171,18 @@ if( !class_exists('SK_Ext_Walker_Nav_Menu_With_Image')) {
 
 			if ( ! empty( $item->_invalid ) ) {
 				$classes[] = 'menu-item-invalid';
-				/* translators: %s: title of menu item which is invalid */
-				$title = sprintf( __( '%s (Invalid)', 'shopkeeper-extender' ), $item->title );
+				$title = sprintf(
+					/* translators: %s: title of menu item which is invalid */
+					__( '%s (Invalid)', 'shopkeeper-extender' ),
+					$item->title
+				);
 			} elseif ( isset( $item->post_status ) && 'draft' == $item->post_status ) {
 				$classes[] = 'pending';
-				/* translators: %s: title of menu item in draft status */
-				$title = sprintf( __( '%s (Pending)', 'shopkeeper-extender' ), $item->title );
+				$title = sprintf(
+					/* translators: %s: title of menu item in draft status */
+					__( '%s (Pending)', 'shopkeeper-extender' ),
+					$item->title
+				);
 			}
 
 			$title = ( ! isset( $item->label ) || '' == $item->label ) ? $title : $item->label;
@@ -297,7 +306,8 @@ if( !class_exists('SK_Ext_Walker_Nav_Menu_With_Image')) {
 					<div class="menu-item-actions description-wide submitbox">
 						<?php if ( 'custom' != $item->type && $original_title !== false ) : ?>
 							<p class="link-to-original">
-								<?php printf( __('Original: %s', 'shopkeeper-extender'), '<a href="' . esc_attr( $item->url ) . '">' . esc_html( $original_title ) . '</a>' ); ?>
+								<?php esc_html_e( 'Original:', 'shopkeeper-extender' ); ?>
+								<a href="<?php echo esc_url( $item->url ); ?>"><?php echo esc_html( $original_title ); ?></a>
 							</p>
 						<?php endif; ?>
 						<a class="item-delete submitdelete deletion" id="delete-<?php echo esc_attr($item_id); ?>" href="<?php

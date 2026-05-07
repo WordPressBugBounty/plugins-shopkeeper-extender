@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 // [banner]
 function sk_banner_shortcode($params = array(), $content = null) {
 

@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 function sk_product_categories_shortcode( $atts ) {
 
 	wp_enqueue_style(  'shopkeeper-categories-grid-shortcode-styles' );
@@ -26,6 +28,7 @@ function sk_product_categories_shortcode( $atts ) {
 	if ($product_categories_selection == "auto") {
 
 		$args = array(
+			'taxonomy'   => 'product_cat',
 			'orderby'    => 'title',
 			'order'      => $order,
 			'hide_empty' => $hide_empty,
@@ -40,6 +43,7 @@ function sk_product_categories_shortcode( $atts ) {
 	} else {
 
 		$args = array(
+			'taxonomy'   => 'product_cat',
 			'orderby'    => 'include',
 			'hide_empty' => $hide_empty,
 			'include'    => $ids,
@@ -49,7 +53,7 @@ function sk_product_categories_shortcode( $atts ) {
 
 	}
 
-	$product_categories = get_terms( 'product_cat', $args );
+	$product_categories = get_terms( $args );
 
 	if ( $hide_empty ) {
 		foreach ( $product_categories as $key => $category ) {

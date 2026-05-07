@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 //Custom Menu
 include_once( dirname( __FILE__ ) . '/class/class-sk-ext-navwalker-image.php' );
 include_once( dirname( __FILE__ ) . '/class/class-sk-ext-navwalker-image-output.php' );

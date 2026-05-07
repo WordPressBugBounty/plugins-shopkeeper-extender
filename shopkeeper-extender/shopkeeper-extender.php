@@ -2,11 +2,13 @@
 
 /**
  * Plugin Name:       		Shopkeeper Extender
- * Plugin URI:        		https://shopkeeper.wp-theme.design/
+ * Plugin URI:        		https://shopkeeper.getbowtied.com
  * Description:       		Extends the functionality of Shopkeeper with theme specific features.
- * Version:           		7.3
+ * Version:           		7.5
  * Author:            		Get Bowtied
  * Author URI:				https://getbowtied.com
+ * License:					GPL v2 or later
+ * License URI:				https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:				shopkeeper-extender
  * Domain Path:				/languages/
  * Requires at least: 		6.0
@@ -19,14 +21,6 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
-
-require 'dashboard/inc/puc/plugin-update-checker.php';
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
-$plugin_update_checker = PucFactory::buildUpdateChecker(
-	'https://raw.githubusercontent.com/getbowtied/shopkeeper-extender/master/core/updater/assets/plugin.json',
-	__FILE__,
-	'shopkeeper-extender'
-);
 
 if ( ! class_exists( 'ShopkeeperExtender' ) ) :
 
@@ -89,14 +83,6 @@ if ( ! class_exists( 'ShopkeeperExtender' ) ) :
     				include_once( dirname( __FILE__ ) . '/includes/addons/class-wc-category-header-image.php' );
     			}
 
-			}
-
-			if ( is_admin() || ( defined('WP_CLI') && WP_CLI ) ) {
-				global $gbt_dashboard_params;
-				$gbt_dashboard_params = array(
-					'gbt_theme_slug' => $this->theme_slug,
-				);
-				include_once( dirname( __FILE__ ) . '/dashboard/index.php' );
 			}
 
 			self::$initialized = true;

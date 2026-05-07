@@ -114,15 +114,15 @@ class SK_Ext_Customize_Repeater_Control extends WP_Customize_Control {
 				?>
 				<div class="customizer-repeater-general-control-repeater-container customizer-repeater-draggable">
 					<div class="customizer-repeater-customize-control-title">
-						<?php echo !empty( $icon->title ) ? esc_html( $icon->title ) : esc_html( 'Social Media Profile', 'shopkeeper-extender' ); ?>
+						<?php echo ! empty( $icon->title ) ? esc_html( wp_specialchars_decode( (string) $icon->title, ENT_QUOTES ) ) : esc_html__( 'Social Media Profile', 'shopkeeper-extender' ); ?>
 					</div>
 					<div class="customizer-repeater-box-content-hidden">
 						<?php
 
 						$id 		= !empty( $icon->id ) ? $icon->id : '';
-						$link 		= !empty( $icon->link ) ? $icon->link : '';
-						$link_title = !empty( $icon->link_title ) ? $icon->link_title : '';
-						$title 		= !empty( $icon->title ) ? $icon->title : '';
+						$link 		= ! empty( $icon->link ) ? $icon->link : '';
+						$link_title = ! empty( $icon->link_title ) ? wp_specialchars_decode( (string) $icon->link_title, ENT_QUOTES ) : '';
+						$title 		= ! empty( $icon->title ) ? wp_specialchars_decode( (string) $icon->title, ENT_QUOTES ) : '';
 						$icon_slug 	= !empty( $icon->icon_slug ) ? $icon->icon_slug : '';
 						$image_url 	= !empty( $icon->image_url ) ? $icon->image_url : '';
 
@@ -223,9 +223,9 @@ class SK_Ext_Customize_Repeater_Control extends WP_Customize_Control {
 	 */
 	 private function input_control( $options, $value = '', $show = true ) {
 		?>
-		<div class="<?php esc_attr_e( $options['class'] ); ?>-wrapper" <?php echo !$show ? 'style="display:none;"' : ''; ?>>
-			<span class="customize-control-title"><?php esc_html_e( $options['label'] ); ?></span>
-			<input type="text" value="<?php esc_attr_e( $value ); ?>" class="<?php esc_attr_e( $options['class'] ); ?>"/>
+		<div class="<?php echo esc_attr( $options['class'] ); ?>-wrapper" <?php echo !$show ? 'style="display:none;"' : ''; ?>>
+			<span class="customize-control-title"><?php echo esc_html( $options['label'] ); ?></span>
+			<input type="text" value="<?php echo esc_attr( $value ); ?>" class="<?php echo esc_attr( $options['class'] ); ?>"/>
 		</div>
 		<?php
 
@@ -247,9 +247,9 @@ class SK_Ext_Customize_Repeater_Control extends WP_Customize_Control {
 			<form class="customizer-repeater-icons">
 				<?php foreach( $this->profiles as $profile ) { ?>
 					<div>
-						<input type="radio" name="customizer_repeater_icon" class="customizer-repeater-icon" value="<?php esc_attr_e( $profile['slug'] ); ?>" <?php checked( $value, $profile['slug'] ); ?>
-						style="background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D\'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg\'%20viewBox%3D\'0%200%2050%2050\'%3E%3Cpath%20d%3D\'<?php esc_html_e( $profile['svg_path'] ); ?>\'%20fill%3D\'%23000000\'%2F%3E%3C%2Fsvg%3E');" />
-						<span class="tooltip"><?php esc_attr_e( $profile['name'] ); ?></span>
+						<input type="radio" name="customizer_repeater_icon" class="customizer-repeater-icon" value="<?php echo esc_attr( $profile['slug'] ); ?>" <?php checked( $value, $profile['slug'] ); ?>
+						style="background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D\'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg\'%20viewBox%3D\'0%200%2050%2050\'%3E%3Cpath%20d%3D\'<?php echo esc_attr( $profile['svg_path'] ); ?>\'%20fill%3D\'%23000000\'%2F%3E%3C%2Fsvg%3E');" />
+						<span class="tooltip"><?php echo esc_html( wp_specialchars_decode( (string) $profile['name'], ENT_QUOTES ) ); ?></span>
 					</div>
 				<?php } ?>
 				<div>
@@ -279,7 +279,7 @@ class SK_Ext_Customize_Repeater_Control extends WP_Customize_Control {
 
 			<input type="hidden" class="widefat custom-media-url" value="<?php echo esc_url( $value ); ?>">
 			<img class="custom-media-url-preview" src="<?php echo esc_url( $value ); ?>" />
-			<input type="button" class="button button-secondary customizer-repeater-custom-media-button" value="<?php echo !empty($value) ? esc_attr( 'Change Image','shopkeeper-extender' ) : esc_attr( 'Add Image','shopkeeper-extender' ); ?>" />
+			<input type="button" class="button button-secondary customizer-repeater-custom-media-button" value="<?php echo ! empty( $value ) ? esc_attr__( 'Change Image', 'shopkeeper-extender' ) : esc_attr__( 'Add Image', 'shopkeeper-extender' ); ?>" />
 		</div>
 		<?php
 

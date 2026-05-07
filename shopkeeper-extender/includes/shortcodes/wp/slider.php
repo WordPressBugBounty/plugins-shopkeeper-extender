@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 // [slider]
 function sk_slider_shortcode($params = array(), $content = null) {
 

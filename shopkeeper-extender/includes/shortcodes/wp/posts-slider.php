@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 // [from_the_blog]
 function sk_posts_slider_shortcode($atts, $content = null) {
 
@@ -63,21 +65,33 @@ function sk_posts_slider_shortcode($atts, $content = null) {
 										<?php endif;  ?>
 
 									</span>
-									<span class="from_the_blog_title" href="<?php the_permalink(); ?>"><?php echo get_the_title(); ?></span>
+									<span class="from_the_blog_title" href="<?php the_permalink(); ?>"><?php echo esc_html( get_the_title() ); ?></span>
 								</a>
 
 		                        <div class="from_the_blog_content">
 		                            <div class="post_meta_archive">
-		                            	<?php _e( ' by ', 'shopkeeper-extender' ); ?>
-		                            	<a class="url fn n" href="<?php echo get_author_posts_url( get_the_author_meta( 'ID' )); ?>"
-		                            		title="<?php echo sprintf( esc_html__( 'View all posts by %s', 'shopkeeper-extender' ), get_the_author() ); ?>"
+		                            	<?php esc_html_e( ' by ', 'shopkeeper-extender' ); ?>
+		                            	<a class="url fn n" href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>"
+		                            		title="<?php echo esc_attr(
+		                            			sprintf(
+		                            				/* translators: %s: author display name */
+		                            				__( 'View all posts by %s', 'shopkeeper-extender' ),
+		                            				get_the_author()
+		                            			)
+		                            		); ?>"
 		                            		rel="author">
-		                            		<?php echo get_the_author(); ?>
+		                            		<?php echo esc_html( get_the_author() ); ?>
 		                            	</a>
-		                            	<?php _e( ' on ', 'shopkeeper-extender' ); ?>
-		                            	<a href="<?php the_permalink(); ?>" rel="bookmark"
-		                            		title="<?php echo sprintf( esc_html__( 'Permalink to %s', 'shopkeeper-extender' ), the_title_attribute( 'echo=0' ) ); ?>">
-		                            		<?php echo get_the_date(); ?>
+		                            	<?php esc_html_e( ' on ', 'shopkeeper-extender' ); ?>
+		                            	<a href="<?php echo esc_url( get_permalink() ); ?>" rel="bookmark"
+		                            		title="<?php echo esc_attr(
+		                            			sprintf(
+		                            				/* translators: %s: post title */
+		                            				__( 'Permalink to %s', 'shopkeeper-extender' ),
+		                            				wp_strip_all_tags( get_the_title() )
+		                            			)
+		                            		); ?>">
+		                            		<?php echo esc_html( get_the_date() ); ?>
 		                            	</a>
 									</div>
 		                        </div>
@@ -104,7 +118,7 @@ function sk_posts_slider_shortcode($atts, $content = null) {
     </div>
 
 	<?php
-	wp_reset_query();
+	wp_reset_postdata();
 	$content = ob_get_contents();
 	ob_end_clean();
 

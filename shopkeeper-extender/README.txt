@@ -3,7 +3,7 @@ Contributors: getbowtied
 Tags: shopkeeper, woocommerce, theme
 Requires at least: 6.0
 Tested up to: 6.9
-Stable tag: 7.3
+Stable tag: 7.5
 Requires PHP: 7.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -16,6 +16,15 @@ Companion plugin for the [Shopkeeper Theme](https://1.envato.market/getbowtied-t
 
 **What is Shopkeeper?**
 [Shopkeeper](https://1.envato.market/getbowtied-to-shopkeeper) is a WordPress/WooCommerce Theme that helps you easily create a blazingly fast, professional and responsive website for eCommerce and beyond.
+
+== External services ==
+
+Optional WooCommerce **product sharing** outputs links to third-party sharing pages. A visitor’s browser only contacts these services if they choose to use a share button.
+
+* **What data is sent and when:** The share URL includes the product page address and text such as the product title; Pinterest may also include the product image URL. The plugin does not make separate background requests to these services—only the generated links and optional Open Graph meta tags for social previews on the product page.
+* Meta (Facebook) — Terms: https://www.facebook.com/legal/terms | Privacy: https://www.facebook.com/privacy/policy/
+* X — Terms: https://x.com/en/tos | Privacy: https://x.com/en/privacy
+* Pinterest — Terms: https://policy.pinterest.com/en/terms-of-service | Privacy: https://policy.pinterest.com/en/privacy-policy
 
 == Features ==
 
@@ -133,9 +142,12 @@ Experience the difference that Shopkeeper can make for your online store and sta
 
 Start your journey to success today and elevate your online store to the next level with Shopkeeper!
 
-[Shopkeeper Demo](https://shopkeeper.wp-theme.design/)
+[Shopkeeper Demo](https://shopkeeper.getbowtied.com)
 
 == Changelog ==
+
+= 7.5 =
+- Maintenance: Data Sanitization/Escaping
 
 = 7.3 =
 - Update Compatibility with WordPress 6.9.4
@@ -242,7 +254,7 @@ Start your journey to success today and elevate your online store to the next le
 - Small maintenance updates
 
 = 2.3 =
-- New: If the [Shopkeeper Theme](https://shopkeeper.wp-theme.design/) is not activated, a notification is displayed in the dashboard.
+- New: If the [Shopkeeper Theme](https://shopkeeper.getbowtied.com) is not activated, a notification is displayed in the dashboard.
 
 = 2.2 =
 - Removed: WordPress Blocks are deprecated.

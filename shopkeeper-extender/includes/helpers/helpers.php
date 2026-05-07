@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 function sk_bool_to_string( $bool ) {
 	$bool = is_bool( $bool ) ? $bool : ( 'yes' === $bool || 1 === $bool || 'true' === $bool || '1' === $bool );
 
@@ -35,14 +37,8 @@ function sk_sanitize_repeater( $input ) {
  */
 function sk_ext_is_topbar_enabled(){
 
-    return get_theme_mod( 'top_bar_switch', false );
+	return get_theme_mod( 'top_bar_switch', false );
 }
-
-// Other Plugins
-function gbt_other_plugins_enqueue_scripts() {
-   wp_enqueue_script( 'gbt-other-plugins', plugins_url( 'js/other_plugins.js', __FILE__ ), array('jquery') );
-}
-add_action( 'admin_enqueue_scripts', 'gbt_other_plugins_enqueue_scripts' );
 
 // Admin Notices
 function shopkeeper_extender_admin_notices_enqueue_scripts() {

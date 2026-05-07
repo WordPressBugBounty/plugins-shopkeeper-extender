@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 include_once( dirname( __FILE__ ) . '/wp/posts-slider.php' );
 include_once( dirname( __FILE__ ) . '/wp/banner.php' );
 include_once( dirname( __FILE__ ) . '/wp/slider.php' );

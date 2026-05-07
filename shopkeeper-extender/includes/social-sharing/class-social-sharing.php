@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 if ( ! class_exists( 'SKSocialSharing' ) ) :
 
 	/**
@@ -55,8 +57,8 @@ if ( ! class_exists( 'SKSocialSharing' ) ) :
 					<meta property="og:url" content="<?php the_permalink(); ?>">
 					<meta property="og:type" content="product">
 					<meta property="og:title" content="<?php the_title(); ?>">
-					<meta property="og:description" content="<?php esc_html_e($description); ?>">
-					<meta property="og:image" content="<?php esc_attr_e($image); ?>">
+					<meta property="og:description" content="<?php echo esc_attr( $description ); ?>">
+					<meta property="og:image" content="<?php echo esc_url( $image ); ?>">
 
 					<?php
 				}
@@ -294,7 +296,7 @@ if ( ! class_exists( 'SKSocialSharing' ) ) :
 					<?php if( sk_string_to_bool( get_option( 'sk_sharing_options_pinterest', 'yes' ) ) ) { ?>
 						<a target="_blank"
 							class="social_media social_media_pinterest"
-							href="http://pinterest.com/pin/create/button/?url=<?php urlencode(the_permalink()); ?>&amp;description=<?php the_title(); ?>&amp;media=<?php esc_attr_e($image); ?>"
+							href="http://pinterest.com/pin/create/button/?url=<?php echo rawurlencode( get_permalink() ); ?>&amp;description=<?php the_title(); ?>&amp;media=<?php echo rawurlencode( $image ); ?>"
 							title="<?php esc_html_e( 'Pinterest', 'shopkeeper-extender' ); ?>"
 							count-layout=”vertical”>
 							<svg
