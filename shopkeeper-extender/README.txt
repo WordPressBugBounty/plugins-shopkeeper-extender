@@ -2,8 +2,8 @@
 Contributors: getbowtied
 Tags: shopkeeper, woocommerce, theme
 Requires at least: 6.0
-Tested up to: 6.9
-Stable tag: 7.5
+Tested up to: 7.0
+Stable tag: 7.6
 Requires PHP: 7.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -145,6 +145,10 @@ Start your journey to success today and elevate your online store to the next le
 [Shopkeeper Demo](https://shopkeeper.getbowtied.com)
 
 == Changelog ==
+
+= 7.6 =
+- Update Compatibility with WordPress 7.0.0
+- Update Compatibility with WooCommerce 10.7.0
 
 = 7.5 =
 - Maintenance: Data Sanitization/Escaping
