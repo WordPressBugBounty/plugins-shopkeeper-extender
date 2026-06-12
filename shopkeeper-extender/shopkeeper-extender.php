@@ -4,7 +4,7 @@
  * Plugin Name:       		Shopkeeper Extender
  * Plugin URI:        		https://shopkeeper.getbowtied.com
  * Description:       		Extends the functionality of Shopkeeper with theme specific features.
- * Version:           		7.6
+ * Version:           		7.7
  * Author:            		Get Bowtied
  * Author URI:				https://getbowtied.com
  * License:					GPL v2 or later
