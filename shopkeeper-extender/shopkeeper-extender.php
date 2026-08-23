@@ -4,7 +4,7 @@
  * Plugin Name:       		Shopkeeper Extender
  * Plugin URI:        		https://shopkeeper.getbowtied.com
  * Description:       		Extends the functionality of Shopkeeper with theme specific features.
- * Version:           		7.7
+ * Version:           		8.0
  * Author:            		Get Bowtied
  * Author URI:				https://getbowtied.com
  * License:					GPL v2 or later
@@ -12,7 +12,7 @@
  * Text Domain:				shopkeeper-extender
  * Domain Path:				/languages/
  * Requires at least: 		6.0
- * Tested up to: 			7.0
+ * Tested up to: 			7.1
  *
  * @package  Shopkeeper Extender
  * @author   GetBowtied
@@ -28,7 +28,6 @@ if ( ! class_exists( 'ShopkeeperExtender' ) ) :
 
 		private static $instance = null;
 		private static $initialized = false;
-		private $theme_slug;
 
 		private function __construct() {
 			// Empty constructor - initialization happens in init_instance
@@ -47,8 +46,6 @@ if ( ! class_exists( 'ShopkeeperExtender' ) ) :
 			
 			$version = ( isset(get_plugin_data( __FILE__ )['Version']) && !empty(get_plugin_data( __FILE__ )['Version']) ) ? get_plugin_data( __FILE__ )['Version'] : '1.0';
 			define ( 'SK_EXT_VERSION', $version );
-
-			$this->theme_slug = 'shopkeeper';
 
 			// Move existing constructor code here
 			if( function_exists('shopkeeper_theme_slug') ) {
