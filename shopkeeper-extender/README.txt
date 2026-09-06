@@ -3,7 +3,7 @@ Contributors: getbowtied
 Tags: shopkeeper, woocommerce, theme
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 10.0.1
+Stable tag: 10.0.6
 Requires PHP: 7.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -145,6 +145,20 @@ Start your journey to success today and elevate your online store to the next le
 [Shopkeeper Demo](https://shopkeeper.getbowtied.com)
 
 == Changelog ==
+
+= 10.0.6 =
+* Newer updater always wins via versioned loader and GBT_Extender_Theme_Updater_Core; detach legacy direct-require hooks
+= 10.0.5 =
+- Detect current themes via GBT_Theme_Update_Notice; use marker files only on front/cron when the dashboard is not loaded
+
+= 10.0.4 =
+- Suppress legacy license-subscription admin notices when the fallback owns theme updates
+
+= 10.0.3 =
+- Fix fallback staying inactive when the theme ships both the new marker file and legacy license-gated updates
+
+= 10.0.2 =
+- Ensure the fallback theme updater always replaces older theme update notices
 
 = 10.0.1 =
 - Add option to enable theme auto-updates from the update notice
