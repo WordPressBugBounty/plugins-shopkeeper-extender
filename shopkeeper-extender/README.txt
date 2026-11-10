@@ -3,7 +3,7 @@ Contributors: getbowtied
 Tags: shopkeeper, woocommerce, theme
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 11.2
+Stable tag: 11.3
 Requires PHP: 7.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -145,6 +145,12 @@ Start your journey to success today and elevate your online store to the next le
 [Shopkeeper Demo](https://shopkeeper.getbowtied.com)
 
 == Changelog ==
+
+= 11.3 =
+* Compatibility update with WordPress 7.1.4.
+* Compatibility update with WooCommerce 11.2.2.
+* Fix: Resolve iframe content issue in theme update details.
+* Compatibility update with WPBakery Page Builder 9.1.
 
 = 11.2 =
 * Security: Patched Dashboard SDK, recommended alongside the critical PHP security fixes of October 21, 2026 (CVE-2026-109618, CVE-2026-109619)
